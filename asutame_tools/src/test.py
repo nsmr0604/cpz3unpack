@@ -1,1 +1,1 @@
-print chr(115)
+print 'abc'.endswith('bc')

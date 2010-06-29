@@ -20,7 +20,7 @@ del originalKeyTuple
 def decrypt(buf, offset, length, delta, rolcl, keyMask):
     key = array('B')
     
-    padding = (4 - (length & 0x03)) & 0x03
+    padding = length & 0x03
 
     for i in xrange(0, 16):
         tmp = unpack('L', originalKey[i * 4:i * 4 + 4])[0]
@@ -55,23 +55,67 @@ def decrypt(buf, offset, length, delta, rolcl, keyMask):
         ebp += 0x6E58A5C2
         ebp = ebp & 0xFFFFFFFF
         
-        ebp = rol(ebp, rolcl)
+        ebp = rol32(ebp, rolcl)
 
         buf[i:i + 4] = array('B', pack('L', ebp))
         i = i + 4
         if i >= length - 3:
             break
-    if padding > 0:
-        keyIndex = (i + delta) & 0x3F
-        eax = unpack('L', buf[i:length].tostring() + padding * '\0')[0]
-        ebp = ebp ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
-        ebp += 0x6E58A5C2
-        ebp = ebp & 0xFFFFFFFF
-        ebp = rol(ebp, rolcl)
-        buf[i:length] = array('B', pack('L', ebp)[0:length - i])
+    
+    #处理尾部
+    j = i
+    while padding > 0:
+        keyIndex = (j + delta) & 0x3F
+        eax = unpack('L', key[keyIndex:keyIndex + 4])[0]
+        ecx = padding * 4
+        eax = eax >> (ecx & 0x0f)
+        j = j + 4
+        i = i + 1
+        al = eax & 0x0ff
+        al = al ^ buf[i - 1]
+        al = al + 0x52
+        al = al & 0x0ff
+        padding = padding - 1
+        buf[i - 1] = al
 
     
-def rol(num, count):
+def rol32(num, count):
         num1 = (num << count) & 0xFFFFFFFF
         num2 = (num >> (0x20 - count)) & 0xFFFFFFFF
         return num1 | num2
+
+def ror8(num, count):
+        num1 = (num >> count) & 0xFF
+        num2 = (num << (0x08 - count)) & 0xFF
+        return num1 | num2
+
+def decryptPs2(buf, offset, length):
+    al = 0x3E
+    cl = 0x03
+    for i in xrange(offset, offset + length):
+        dl = buf[i]
+        dl = dl - 0x7C
+        dl = dl & 0xFF
+        dl = dl ^ al
+        dl = ror8(dl, cl)
+        buf[i] = dl
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

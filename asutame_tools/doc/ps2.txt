@@ -1,6 +1,16 @@
+Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
 
-;???
-00439CE0  |> 8A16           /MOV DL,BYTE PTR DS:[ESI]                ;  decrypt
+00000000   50 53 32 41 30 00 00 00  CC 67 66 00 4E 20 4F 35   PS2A0...蘥f.N O5
+00000010   91 00 00 00 9C 43 04 00  9C 00 00 00 77 0F 00 00   ?..淐..?..w...
+00000020   30 BA 01 00 A6 C3 00 00  F3 55 04 00 00 00 00 00   0?.γ..骍......
+
+0x04-0x07:文件头长度
+0x08-0x0B:checksum(64bit)
+0x28-0x2B:解压后大小，不包含头
+
+从0x30开始
+
+00439CE0  |> 8A16           /MOV DL,BYTE PTR DS:[ESI]                ;  start at ps2  0x30
 00439CE2  |. 80EA 7C        |SUB DL,7C
 00439CE5  |. 32D0           |XOR DL,AL                               ;  AL=3E
 00439CE7  |. D2CA           |ROR DL,CL                               ;  CL=03
@@ -9,6 +19,99 @@
 00439CEF  |. 85FF           |TEST EDI,EDI
 00439CF1  |. 8856 FF        |MOV BYTE PTR DS:[ESI-1],DL
 00439CF4  |.^77 EA          \JA SHORT cmvs.00439CE0
+
+
+00439D00  |. 8B45 28        MOV EAX,DWORD PTR SS:[EBP+28]
+00439D03  |. 83C0 30        ADD EAX,30
+00439D06  |. 50             PUSH EAX                                 ; /Size
+00439D07  |. 6A 00          PUSH 0                                   ; |Flags = LMEM_FIXED
+00439D09  |. FF15 94125000  CALL DWORD PTR DS:[<&KERNEL32.LocalAlloc>; \LocalAlloc
+
+
+解压
+0043CC50   $ 8B4424 10      MOV EAX,DWORD PTR SS:[ESP+10]
+0043CC54   . 53             PUSH EBX
+0043CC55   . 55             PUSH EBP
+0043CC56   . 56             PUSH ESI
+0043CC57   . 8B7424 14      MOV ESI,DWORD PTR SS:[ESP+14]
+0043CC5B   . 57             PUSH EDI
+0043CC5C   . 68 DF070000    PUSH 7DF
+0043CC61   . 8D1C06         LEA EBX,DWORD PTR DS:[ESI+EAX]
+0043CC64   . 6A 00          PUSH 0
+0043CC66   . 68 38FB5300    PUSH cmvs.0053FB38
+0043CC6B   . 895C24 2C      MOV DWORD PTR SS:[ESP+2C],EBX
+0043CC6F   . E8 9C7B0A00    CALL cmvs.004E4810                       ;  empty text_buf
+0043CC74   . 8B7C24 20      MOV EDI,DWORD PTR SS:[ESP+20]
+0043CC78   . 83C4 0C        ADD ESP,0C
+0043CC7B   . B9 DF070000    MOV ECX,7DF                              ;  r=2015;
+0043CC80   . 33D2           XOR EDX,EDX                              ;  flags=0
+0043CC82   . EB 0C          JMP SHORT cmvs.0043CC90
+0043CC84   > 8B5C24 20      MOV EBX,DWORD PTR SS:[ESP+20]
+0043CC88   . EB 06          JMP SHORT cmvs.0043CC90
+0043CC8A     8D9B 00000000  LEA EBX,DWORD PTR DS:[EBX]
+0043CC90   > D1EA           SHR EDX,1                                ;  flags>>=1;
+0043CC92   . F7C2 00010000  TEST EDX,100
+0043CC98   . 895424 18      MOV DWORD PTR SS:[ESP+18],EDX
+0043CC9C   . 75 19          JNZ SHORT cmvs.0043CCB7                  ;  if(flags&256==0){
+0043CC9E   . 3BF3           CMP ESI,EBX
+0043CCA0   . 0F83 AE000000  JNB cmvs.0043CD54                        ;    if(EOF)break;
+0043CCA6   . 0FB606         MOVZX EAX,BYTE PTR DS:[ESI]              ;    c=readByte();
+0043CCA9   . 83C6 01        ADD ESI,1
+0043CCAC   . 0D 00FF0000    OR EAX,0FF00                             ;    flags = c | 0xff00;
+0043CCB1   . 894424 18      MOV DWORD PTR SS:[ESP+18],EAX
+0043CCB5   . 8BD0           MOV EDX,EAX
+0043CCB7   > F6C2 01        TEST DL,1                                ;  }
+0043CCBA   . 74 24          JE SHORT cmvs.0043CCE0                   ;  if (flags & 1) {
+0043CCBC   . 3BF3           CMP ESI,EBX
+0043CCBE   . 0F83 90000000  JNB cmvs.0043CD54                        ;    if(EOF)break;
+0043CCC4   . 0FB606         MOVZX EAX,BYTE PTR DS:[ESI]              ;    c=readByte();
+0043CCC7   . 8807           MOV BYTE PTR DS:[EDI],AL
+0043CCC9   . 8881 38FB5300  MOV BYTE PTR DS:[ECX+53FB38],AL          ;    text_buf[r] = c;
+0043CCCF   . 83C1 01        ADD ECX,1                                ;    r++;
+0043CCD2   . 83C6 01        ADD ESI,1                                ;    i=readByte();
+0043CCD5   . 83C7 01        ADD EDI,1
+0043CCD8   . 81E1 FF070000  AND ECX,7FF                              ;    r &= (N - 1);
+0043CCDE   .^EB B0          JMP SHORT cmvs.0043CC90                  ;  }else{
+0043CCE0   > 3BF3           CMP ESI,EBX
+0043CCE2   . 73 70          JNB SHORT cmvs.0043CD54                  ;    if(EOF)break;
+0043CCE4   . 0FB62E         MOVZX EBP,BYTE PTR DS:[ESI]              ;    i=readByte();
+0043CCE7   . 83C6 01        ADD ESI,1
+0043CCEA   . 3BF3           CMP ESI,EBX
+0043CCEC   . 73 66          JNB SHORT cmvs.0043CD54                  ;    if(EOF)break;
+0043CCEE   . 0FB606         MOVZX EAX,BYTE PTR DS:[ESI]              ;    j=readByte();
+0043CCF1   . 8BD8           MOV EBX,EAX
+0043CCF3   . 81E3 E0000000  AND EBX,0E0
+0043CCF9   . 03DB           ADD EBX,EBX
+0043CCFB   . 03DB           ADD EBX,EBX
+0043CCFD   . 03DB           ADD EBX,EBX
+0043CCFF   . 83E0 1F        AND EAX,1F                               ;    j = (j & 0x1f);
+0043CD02   . 0BEB           OR EBP,EBX                               ;    i |= ((j & 0xe0) << 4);
+0043CD04   . 83C6 01        ADD ESI,1
+0043CD07   . 83C0 01        ADD EAX,1                                ;    j++;
+0043CD0A   . 8BD8           MOV EBX,EAX
+0043CD0C   . B8 00000000    MOV EAX,0
+0043CD11   .^0F88 6DFFFFFF  JS cmvs.0043CC84                         ;    if(?<0)goto ?;
+0043CD17   . EB 07          JMP SHORT cmvs.0043CD20                  ;    for(k=0;k<=j;k++){
+0043CD19   . 8DA424 0000000>LEA ESP,DWORD PTR SS:[ESP]
+0043CD20   > 8D1428         LEA EDX,DWORD PTR DS:[EAX+EBP]
+0043CD23   . 81E2 FF070000  AND EDX,7FF
+0043CD29   . 0FB692 38FB530>MOVZX EDX,BYTE PTR DS:[EDX+53FB38]       ;      c = text_buf[(i + k) & 2047];
+0043CD30   . 8817           MOV BYTE PTR DS:[EDI],DL                 ;      output(c);
+0043CD32   . 8891 38FB5300  MOV BYTE PTR DS:[ECX+53FB38],DL          ;      text_buf[r] = c;
+0043CD38   . 83C1 01        ADD ECX,1                                ;      r++;
+0043CD3B   . 83C0 01        ADD EAX,1
+0043CD3E   . 83C7 01        ADD EDI,1
+0043CD41   . 81E1 FF070000  AND ECX,7FF                              ;      r &= 2047;
+0043CD47   . 3BC3           CMP EAX,EBX
+0043CD49   .^7E D5          JLE SHORT cmvs.0043CD20                  ;    }
+0043CD4B   . 8B5424 18      MOV EDX,DWORD PTR SS:[ESP+18]
+0043CD4F   .^E9 30FFFFFF    JMP cmvs.0043CC84                        ;  }
+0043CD54   > 8B4424 1C      MOV EAX,DWORD PTR SS:[ESP+1C]
+0043CD58   . 5F             POP EDI
+0043CD59   . 5E             POP ESI
+0043CD5A   . 5D             POP EBP
+0043CD5B   . 5B             POP EBX
+0043CD5C   . C3             RETN
 
 
 
