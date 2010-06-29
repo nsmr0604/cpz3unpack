@@ -17,6 +17,16 @@ magic=cpz3
 0043981C   . 6A 00          PUSH 0                                   ; |Flags = LMEM_FIXED
 0043981E   . FFD5           CALL EBP                                 ; \LocalAlloc
 
+;cpz3 header索引项的0x14和C7F5DA63 XOR后得到一个MASK
+00439A90   . E8 D5C10A00    CALL cmvs.004E5C6A
+00439A95   > 8B4E 14        MOV ECX,DWORD PTR DS:[ESI+14]
+00439A98   . 81F1 63DAF5C7  XOR ECX,C7F5DA63
+00439A9E   . 51             PUSH ECX
+00439A9F   . 53             PUSH EBX
+00439AA0   . 57             PUSH EDI
+00439AA1   . 8BCD           MOV ECX,EBP
+00439AA3   . E8 E8FAFFFF    CALL cmvs.00439590
+
 ;计算密钥
 004395AA  |. 8D9B 00000000  LEA EBX,DWORD PTR DS:[EBX]
 004395B0  |> 8B3E           /MOV EDI,DWORD PTR DS:[ESI]              ;  CalculateKey
@@ -27,12 +37,32 @@ magic=cpz3
 004395C1  |. 3BD0           |CMP EDX,EAX
 004395C3  |.^72 EB          \JB SHORT cmvs.004395B0
 
-;密钥：
-00537A98                          9F 78 83 C6 22 22 22 2D          毋θ"""-
-00537AA8  AE 61 AD B5 34 24 3A 00 CA C9 C5 F6 52 0C 4E D2  ｮaｭｵ4$:.ﾊﾉﾅ.Nﾒ
-00537AB8  CE A5 DD DC 6A 74 69 1F F6 D2 F5 7F 83 15 81 66  ﾎ･ﾝﾜjti・・’
-00537AC8  0D 7F 0A 2B 9B 78 96 60 36 33 25 53 C0 96 B1 D6  ..+孰冒63%Sﾀ務ﾖ
-00537AD8  3E D5 3D 3B CA 50 C6 75                          >ﾕ=;ﾊPﾆu
+
+;计算ROL的CL
+004395C5  |> 8BC1           MOV EAX,ECX
+004395C7  |. C1E8 04        SHR EAX,4
+004395CA  |. 33C1           XOR EAX,ECX
+004395CC  |. C1E8 04        SHR EAX,4
+004395CF  |. 33C1           XOR EAX,ECX
+004395D1  |. C1E8 04        SHR EAX,4
+004395D4  |. 33C1           XOR EAX,ECX
+004395D6  |. C1E8 04        SHR EAX,4
+004395D9  |. 8B5424 0C      MOV EDX,DWORD PTR SS:[ESP+C]
+004395DD  |. 33C1           XOR EAX,ECX
+004395DF  |. C1E8 04        SHR EAX,4
+004395E2  |. 33C1           XOR EAX,ECX
+004395E4  |. C1E8 04        SHR EAX,4
+004395E7  |. 33C1           XOR EAX,ECX
+004395E9  |. C1E8 04        SHR EAX,4
+004395EC  |. 33C1           XOR EAX,ECX
+004395EE  |. 83F0 FD        XOR EAX,FFFFFFFD
+004395F1  |. 53             PUSH EBX
+004395F2  |. 8B5C24 14      MOV EBX,DWORD PTR SS:[ESP+14]
+004395F6  |. 83E0 0F        AND EAX,0F
+004395F9  |. 8BFB           MOV EDI,EBX
+004395FB  |. 83C0 08        ADD EAX,8
+
+
 
 ;解密：
 00439610  |> 8B2CB5 A07A530>/MOV EBP,DWORD PTR DS:[ESI*4+537AA0]     ;  Decrypt,
@@ -64,6 +94,7 @@ Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
 0-3:int16是本索引项的长度
 4-7:int16是文件长度
 8-F:int32是文件偏移
-10-17:不明，也许是checksum?
+10-13:不明
+14-17:mask
 后面是文件名，32bit对齐
 
