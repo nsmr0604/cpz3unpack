@@ -1,5 +1,5 @@
 
-
+;???
 00439CE0  |> 8A16           /MOV DL,BYTE PTR DS:[ESI]                ;  decrypt
 00439CE2  |. 80EA 7C        |SUB DL,7C
 00439CE5  |. 32D0           |XOR DL,AL                               ;  AL=3E

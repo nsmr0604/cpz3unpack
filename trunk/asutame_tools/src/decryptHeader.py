@@ -24,8 +24,24 @@ def decrypt(buf, offset, length, delta, rolcl, keyMask):
         tmp = (tmp + keyMask) & 0xFFFFFFFF
         key.fromstring(array('B', pack('L', tmp)).tostring())
     
-    #eax=
-    
+    eax = keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax >> 4
+    eax = eax ^ keyMask
+    eax = eax ^ 0xFFFFFFFD
+    eax = eax & 0x0F
+    rolcl = eax + 8
     
     i = offset
     
