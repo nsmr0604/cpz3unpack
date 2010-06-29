@@ -59,15 +59,16 @@ def decrypt(buf, offset, length, delta, rolcl, keyMask):
 
         buf[i:i + 4] = array('B', pack('L', ebp))
         i = i + 4
-        if i >= length - 4:
+        if i >= length - 3:
             break
-    keyIndex = (i + delta) & 0x3F
-    ebp = unpack('L', buf[i:length].tostring() + padding * '\0')[0]
-    ebp = ebp ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
-    ebp += 0x6E58A5C2
-    ebp = ebp & 0xFFFFFFFF
-    ebp = rol(ebp, rolcl)
-    buf[i:length] = array('B', pack('L', ebp)[0:length - i])
+    if padding > 0:
+        keyIndex = (i + delta) & 0x3F
+        eax = unpack('L', buf[i:length].tostring() + padding * '\0')[0]
+        ebp = ebp ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
+        ebp += 0x6E58A5C2
+        ebp = ebp & 0xFFFFFFFF
+        ebp = rol(ebp, rolcl)
+        buf[i:length] = array('B', pack('L', ebp)[0:length - i])
 
     
 def rol(num, count):
