@@ -1,0 +1,13 @@
+
+
+00439CE0  |> 8A16           /MOV DL,BYTE PTR DS:[ESI]                ;  decrypt
+00439CE2  |. 80EA 7C        |SUB DL,7C
+00439CE5  |. 32D0           |XOR DL,AL                               ;  AL=3E
+00439CE7  |. D2CA           |ROR DL,CL                               ;  CL=03
+00439CE9  |. 83EF 01        |SUB EDI,1
+00439CEC  |. 83C6 01        |ADD ESI,1
+00439CEF  |. 85FF           |TEST EDI,EDI
+00439CF1  |. 8856 FF        |MOV BYTE PTR DS:[ESI-1],DL
+00439CF4  |.^77 EA          \JA SHORT cmvs.00439CE0
+
+

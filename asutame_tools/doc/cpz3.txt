@@ -1,0 +1,69 @@
+script.cpz
+
+magic=cpz3
+
+;0,4,C处分别与5E9C4F37，F32AED17，DDDDDDDD异或
+
+0043978E   > 817424 10 374F>XOR DWORD PTR SS:[ESP+10],5E9C4F37       ;  deal with cpz3 header
+00439796   . 817424 14 17ED>XOR DWORD PTR SS:[ESP+14],F32AED17
+0043979E   . 817424 1C DDDD>XOR DWORD PTR SS:[ESP+1C],DDDDDDDD
+
+;第二项是索引大小
+;这里是AC 27
+
+00439814   . 8B7C24 18      MOV EDI,DWORD PTR SS:[ESP+18]            ;  size of index
+00439818   . 83C7 14        ADD EDI,14
+0043981B   . 57             PUSH EDI                                 ; /Size
+0043981C   . 6A 00          PUSH 0                                   ; |Flags = LMEM_FIXED
+0043981E   . FFD5           CALL EBP                                 ; \LocalAlloc
+
+;计算密钥
+004395AA  |. 8D9B 00000000  LEA EBX,DWORD PTR DS:[EBX]
+004395B0  |> 8B3E           /MOV EDI,DWORD PTR DS:[ESI]              ;  CalculateKey
+004395B2  |. 03F9           |ADD EDI,ECX
+004395B4  |. 893C95 A07A530>|MOV DWORD PTR DS:[EDX*4+537AA0],EDI
+004395BB  |. 83C2 01        |ADD EDX,1
+004395BE  |. 83C6 04        |ADD ESI,4
+004395C1  |. 3BD0           |CMP EDX,EAX
+004395C3  |.^72 EB          \JB SHORT cmvs.004395B0
+
+;密钥：
+00537A98                          9F 78 83 C6 22 22 22 2D          毋θ"""-
+00537AA8  AE 61 AD B5 34 24 3A 00 CA C9 C5 F6 52 0C 4E D2  ｮaｭｵ4$:.ﾊﾉﾅ.Nﾒ
+00537AB8  CE A5 DD DC 6A 74 69 1F F6 D2 F5 7F 83 15 81 66  ﾎ･ﾝﾜjti・・’
+00537AC8  0D 7F 0A 2B 9B 78 96 60 36 33 25 53 C0 96 B1 D6  ..+孰冒63%Sﾀ務ﾖ
+00537AD8  3E D5 3D 3B CA 50 C6 75                          >ﾕ=;ﾊPﾆu
+
+;解密：
+00439610  |> 8B2CB5 A07A530>/MOV EBP,DWORD PTR DS:[ESI*4+537AA0]     ;  Decrypt,
+00439617  |. 332A           |XOR EBP,DWORD PTR DS:[EDX]
+00439619  |. 8AC8           |MOV CL,AL
+0043961B  |. 81C5 C2A5586E  |ADD EBP,6E58A5C2
+00439621  |. D3C5           |ROL EBP,CL
+00439623  |. 83C6 01        |ADD ESI,1
+00439626  |. 83C2 04        |ADD EDX,4
+00439629  |. 83E6 0F        |AND ESI,0F
+0043962C  |. 83EF 01        |SUB EDI,1
+0043962F  |. 896A FC        |MOV DWORD PTR DS:[EDX-4],EBP
+00439632  |.^75 DC          \JNZ SHORT cmvs.00439610
+
+;解密后，一个索引项：
+Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
+
+00000010               24 00 00 00  D4 A6 00 00 00 00 00 00       $...驭......
+00000020   00 00 00 00 74 D8 D0 6B  2A CD D6 AE 73 6E 73 79   ....t匦k*椭畇nsy
+00000030   31 34 2E 70 73 32 00 00                            14.ps2..
+
+Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
+
+00000030                            24 00 00 00 CE E4 00 00           $...武..
+00000040   D4 A6 00 00 00 00 00 00  38 2A 56 C4 DF 64 F9 95   驭......8*V倪d鶗
+00000050   73 6E 73 79 31 35 61 2E  70 73 32 00               snsy15a.ps2.
+
+分析：
+0-3:int16是本索引项的长度
+4-7:int16是文件长度
+8-F:int32是文件偏移
+10-17:不明，也许是checksum?
+后面是文件名，32bit对齐
+
