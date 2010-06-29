@@ -3,7 +3,7 @@
 from array import array
 
 N = 2048
-F = 23
+F = 33
 THRESHOLD = 1
 
 def decode(inputBuf, offset, length):
@@ -14,20 +14,20 @@ def decode(inputBuf, offset, length):
     p = offset
     flags = 0
     
-    text_buf = array('B', '\0' * (N + F - 1))
+    text_buf = array('B', '\0' * (N + F))
     outputBuf = array('B')
     r = N - F
     
     while(1):
         flags = flags >> 1
         if flags & 256 == 0:
-            if p >= length:
+            if p >= length + offset:
                 break
             c = inputBuf[p]
             p += 1
             flags = c | 0xff00
         if flags & 1:
-            if p >= length:
+            if p >= length + offset:
                 break
             c = inputBuf[p]
             p += 1
@@ -36,15 +36,15 @@ def decode(inputBuf, offset, length):
             r = r + 1
             r &= N - 1
         else:
-            if p >= length:
+            if p >= length + offset:
                 break
             i = inputBuf[p]
             p += 1
-            if p >= length:
+            if p >= length + offset:
                 break
             j = inputBuf[p]
             p += 1
-            i |= ((j & 0xe0) << 4)
+            i |= ((j & 0xe0) << 3)
             j = (j & 0x1f) + THRESHOLD
             for k in xrange(0, j + 1):
                 c = text_buf[(i + k) & (N - 1)]

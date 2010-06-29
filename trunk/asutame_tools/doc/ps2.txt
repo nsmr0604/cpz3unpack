@@ -8,6 +8,29 @@ Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
 0x08-0x0B:checksum(64bit)
 0x28-0x2B:解压后大小，不包含头
 
+;计算后面解密用的AX
+00439CAE  |> 8B4D 0C        MOV ECX,[ARG.2]
+00439CB1  |. 8BC1           MOV EAX,ECX
+00439CB3  |. C1E8 14        SHR EAX,14
+00439CB6  |. 33D2           XOR EDX,EDX
+00439CB8  |. BB 05000000    MOV EBX,5
+00439CBD  |. F7F3           DIV EBX
+00439CBF  |. 8B7C24 10      MOV EDI,DWORD PTR SS:[ESP+10]
+00439CC3  |. 8BC1           MOV EAX,ECX
+00439CC5  |. C1E8 18        SHR EAX,18
+00439CC8  |. C1E9 03        SHR ECX,3
+00439CCB  |. 83C7 D0        ADD EDI,-30
+00439CCE  |. 02C1           ADD AL,CL
+00439CD0  |. 8D75 30        LEA ESI,[ARG.11]
+00439CD3  |. 80C2 01        ADD DL,1
+00439CD6  |. 85FF           TEST EDI,EDI
+00439CD8  |. 76 1C          JBE SHORT cmvs.00439CF6
+00439CDA  |. 0FB6CA         MOVZX ECX,DL
+00439CDD  |. 8D49 00        LEA ECX,DWORD PTR DS:[ECX]
+
+
+
+
 从0x30开始
 
 00439CE0  |> 8A16           /MOV DL,BYTE PTR DS:[ESI]                ;  start at ps2  0x30
@@ -85,7 +108,7 @@ Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
 0043CCFB   . 03DB           ADD EBX,EBX
 0043CCFD   . 03DB           ADD EBX,EBX
 0043CCFF   . 83E0 1F        AND EAX,1F                               ;      j = (j & 0x1f);
-0043CD02   . 0BEB           OR EBP,EBX                               ;      i |= ((j & 0xe0) << 4);
+0043CD02   . 0BEB           OR EBP,EBX                               ;      i |= ((j & 0xe0) << 3);
 0043CD04   . 83C6 01        ADD ESI,1
 0043CD07   . 83C0 01        ADD EAX,1                                ;      j++;
 0043CD0A   . 8BD8           MOV EBX,EAX
