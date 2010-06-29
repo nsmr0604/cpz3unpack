@@ -3,7 +3,7 @@
 
 from struct import unpack, pack
 from array import array
-from decryptHeader import decrypt
+from decrypt import decrypt, decryptPs2
 
 cpzFilename = ur"C:\games\明日の君と逢うために\data\pack\script.cpz"
 newFilename = ur"C:\games\明日の君と逢うために\data\pack\script.header"
@@ -54,6 +54,10 @@ while i < indexCount:
         item.fromfile(cpz, itemLength)
         #item = cpz.read(itemLength)
         decrypt(item, 0, itemLength, 12, 0x11, itemKeyMask)
+        
+        #解密ps2
+        if itemFilename.endswith('.ps2'):
+            decryptPs2(item, 0x30, itemLength - 0x30)
         with open(outputFolder + itemFilename, 'wb') as outputFile:
             #outputFile.write(item)
             item.tofile(outputFile)
