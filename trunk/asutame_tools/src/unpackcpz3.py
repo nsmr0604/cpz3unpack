@@ -3,9 +3,11 @@
 
 from struct import unpack, pack
 from array import array
+from decryptHeader import decrypt
 
 cpzFilename = ur"C:\games\明日の君と逢うために\data\pack\script.cpz"
 newFilename = ur"C:\games\明日の君と逢うために\data\pack\script.header"
+outputFolder = ur"C:\games\明日の君と逢うために\data\pack\script\\"
 
 #密钥
 key = array('B')
@@ -46,21 +48,30 @@ with open(cpzFilename, 'rb') as cpz:
 
 #解密index
 delta = 12 - 20
-i = 0x14
-while(1):
-    keyIndex = (i + delta) & 0x3F
-    ebp = unpack('L', fullHeader[i:i + 4])[0] ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
-    ebp += 0x6E58A5C2
-    ebp = ebp & 0xFFFFFFFF
-    
-    #ROL EBP,13
-    ebp1 = (ebp << 0x13) & 0xFFFFFFFF
-    ebp2 = (ebp >> 0x0D) & 0xFFFFFFFF
-    ebp = ebp1 | ebp2
-    fullHeader[i:i + 4] = array('B', pack('L', ebp))
-    i = i + 4
-    if i >= indexLength + 4:
-        break
+
+decrypt(fullHeader, 0x14, indexLength + 4, delta, key)
+
+#循环提取文件
+
+i = 0
+pos = 0x14
+while i < indexCount:
+    itemIndexLength = unpack('L', fullHeader[pos:pos + 4])[0]
+    itemLength = unpack('L', fullHeader[pos + 4:pos + 8])[0]
+    itemOffset = unpack('L', fullHeader[pos + 8:pos + 0x0C])[0]
+    itemFilename = fullHeader[pos + 0x18:pos + itemIndexLength].tostring().strip('\0')
+    with open(cpzFilename, 'rb') as cpz:
+        cpz.seek(itemOffset + indexLength, 0)
+        item = array('B')
+        item.fromfile(cpz, itemLength)
+        #item = cpz.read(itemLength)
+        decrypt(item, 0, itemLength - 4, -8, key)
+        with open(outputFolder + itemFilename, 'wb') as outputFile:
+            #outputFile.write(item)
+            item.tofile(outputFile)
+    pos += itemIndexLength
+    i += 1
+
 #写入
 with open(newFilename, 'wb') as newCpz:
     fullHeader.write(newCpz)
