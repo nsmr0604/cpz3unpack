@@ -53,7 +53,7 @@ while i < indexCount:
         item = array('B')
         item.fromfile(cpz, itemLength)
         #item = cpz.read(itemLength)
-        decrypt(item, 0, itemLength - 4, 12, 0x11, itemKeyMask)
+        decrypt(item, 0, itemLength, 12, 0x11, itemKeyMask)
         with open(outputFolder + itemFilename, 'wb') as outputFile:
             #outputFile.write(item)
             item.tofile(outputFile)

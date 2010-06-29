@@ -19,6 +19,9 @@ del originalKeyTuple
 
 def decrypt(buf, offset, length, delta, rolcl, keyMask):
     key = array('B')
+    
+    padding = (4 - (length & 0x03)) & 0x03
+
     for i in xrange(0, 16):
         tmp = unpack('L', originalKey[i * 4:i * 4 + 4])[0]
         tmp = (tmp + keyMask) & 0xFFFFFFFF
@@ -47,17 +50,26 @@ def decrypt(buf, offset, length, delta, rolcl, keyMask):
     
     while(1):
         keyIndex = (i + delta) & 0x3F
-        ebp = unpack('L', buf[i:i + 4])[0] ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
+        ebp = unpack('L', buf[i:i + 4])[0]
+        ebp = ebp ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
         ebp += 0x6E58A5C2
         ebp = ebp & 0xFFFFFFFF
         
         ebp = rol(ebp, rolcl)
+
         buf[i:i + 4] = array('B', pack('L', ebp))
         i = i + 4
-        if i >= length:
+        if i >= length - 4:
             break
+    keyIndex = (i + delta) & 0x3F
+    ebp = unpack('L', buf[i:length].tostring() + padding * '\0')[0]
+    ebp = ebp ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
+    ebp += 0x6E58A5C2
+    ebp = ebp & 0xFFFFFFFF
+    ebp = rol(ebp, rolcl)
+    buf[i:length] = array('B', pack('L', ebp)[0:length - i])
 
-
+    
 def rol(num, count):
         num1 = (num << count) & 0xFFFFFFFF
         num2 = (num >> (0x20 - count)) & 0xFFFFFFFF
