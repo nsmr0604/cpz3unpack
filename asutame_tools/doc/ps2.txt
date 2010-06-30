@@ -10,7 +10,7 @@ Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
 0x28-0x2B:解压后大小，不包含头
 
 
-;计算后面解密用的AX
+;计算后面解密用的AL和CL
 00439CAE  |> 8B4D 0C        MOV ECX,[ARG.2]
 00439CB1  |. 8BC1           MOV EAX,ECX
 00439CB3  |. C1E8 14        SHR EAX,14
@@ -33,12 +33,12 @@ Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
 
 
 
-从0x30开始
+从0x30开始解密
 
 00439CE0  |> 8A16           /MOV DL,BYTE PTR DS:[ESI]                ;  start at ps2  0x30
 00439CE2  |. 80EA 7C        |SUB DL,7C
-00439CE5  |. 32D0           |XOR DL,AL                               ;  AL=3E
-00439CE7  |. D2CA           |ROR DL,CL                               ;  CL=03
+00439CE5  |. 32D0           |XOR DL,AL                               
+00439CE7  |. D2CA           |ROR DL,CL                              
 00439CE9  |. 83EF 01        |SUB EDI,1
 00439CEC  |. 83C6 01        |ADD ESI,1
 00439CEF  |. 85FF           |TEST EDI,EDI
