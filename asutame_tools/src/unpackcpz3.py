@@ -61,13 +61,13 @@ while i < indexCount:
         
             #解密&解压ps2
             if itemFilename.endswith('.ps2'):
-                #decryptPs2(item, 0x30, itemLength - 0x30)
+                decryptPs2(item, 0x30, itemLength - 0x30,unpack('L',item[0x0c:0x10])[0])
                 itemHeader = item[0:0x30]
                 itemContent = decode(item, 0x30, itemLength - 0x30)
                 #outputFile.write(item)
-                #itemHeader.tofile(outputFile)
-                #itemContent.tofile(outputFile)
-                item.tofile(outputFile)
+                itemHeader.tofile(outputFile)
+                itemContent.tofile(outputFile)
+                #item.tofile(outputFile)
             else:
                 item.tofile(outputFile)
             
