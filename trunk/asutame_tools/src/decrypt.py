@@ -89,9 +89,27 @@ def ror8(num, count):
         num2 = (num << (0x08 - count)) & 0xFF
         return num1 | num2
 
-def decryptPs2(buf, offset, length):
-    al = 0x3E
-    cl = 0x03
+def decryptPs2(buf, offset, length, key):
+    ecx = key
+    eax = ecx
+    eax >>= 0x14
+    ebx = 5
+    edx = eax % 5
+    eax = eax / 5
+    eax = ecx
+    eax >>= 0x18
+    ecx >>= 3
+    al = eax & 0xff
+    cl = ecx & 0xff
+    al += cl
+    al &= 0xff
+    dl = edx & 0xff
+    dl += 1
+    ecx = dl
+    cl = ecx & 0xff
+    
+    #al = 0x3E
+    #cl = 0x03
     for i in xrange(offset, offset + length):
         dl = buf[i]
         dl = dl - 0x7C
