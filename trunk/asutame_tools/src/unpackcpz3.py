@@ -61,9 +61,29 @@ while i < indexCount:
         
             #解密&解压ps2
             if itemFilename.endswith('.ps2'):
-                decryptPs2(item, 0x30, itemLength - 0x30,unpack('L',item[0x0c:0x10])[0])
+                decryptPs2(item, 0x30, itemLength - 0x30, unpack('L', item[0x0c:0x10])[0])
                 itemHeader = item[0:0x30]
                 itemContent = decode(item, 0x30, itemLength - 0x30)
+                
+                scriptLength = unpack('L', itemHeader[0x1C:0x20])[0]
+                scriptOffset = len(itemContent) - scriptLength
+                
+
+                with open(outputFolder + itemFilename + '.txt', 'wb') as outputTxtFile:
+                    count = 0
+                    for j in xrange(0, scriptOffset - 8):
+                        if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
+                            sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
+                            sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
+                            sentence = sentence.split('\0')[0]
+                            if sentence == '':
+                                continue
+                            count += 1
+                            outputTxtFile.write(';' + sentence)
+                            outputTxtFile.write('\r\n')
+                            outputTxtFile.write(str(count) + '=' + sentence)
+                            outputTxtFile.write('\r\n')
+                
                 #outputFile.write(item)
                 itemHeader.tofile(outputFile)
                 itemContent.tofile(outputFile)
