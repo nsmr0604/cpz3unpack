@@ -93,7 +93,6 @@ def decryptPs2(buf, offset, length, key):
     ecx = key
     eax = ecx
     eax >>= 0x14
-    ebx = 5
     edx = eax % 5
     eax = eax / 5
     eax = ecx
