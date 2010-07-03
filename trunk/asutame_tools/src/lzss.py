@@ -1,11 +1,202 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+#/**************************************************************
+#    <u><font color="red">LZSS</font></u>.C -- A Data Compression Program
+#    (tab = 4 spaces)
+#***************************************************************
+#    4/6/1989 Haruhiko Okumura
+#    Use, distribute, and modify this program freely.
+#    Please send me your improved versions.
+#        PC-VAN        SCIENCE
+#        NIFTY-Serve    PAF01022
+#        CompuServe    74050,1022
+#**************************************************************/
+
 from array import array
+from objc import nil
 
 N = 2048
 F = 33
 THRESHOLD = 1
 
+NIL = N
+
+maskl = 0xe0
+mask2 = 0x1f
+
+text_buf = array('B', '\0' * (N + F))
+match_position = 0
+match_length = 0
+lson = array('B', '\0' * (N + 1))
+rson = array('B', '\0' * (N + 257))
+dad = array('B', '\0' * (N + 1))
+
+textsize = 0
+codesize = 0
+printcount = 0
+
+def initTree():
+    for i in xrange(N + 1, N + 257):
+        rson[i] = NIL
+    for i in xrange(0, N):
+        dad[i] = NIL
+
+def insertNode(r):
+    cmp = 1
+    p = N + 1 + text_buf[r]
+    while True:
+        if cmp >= 0:
+            if rson[p] != NIL:
+                p = rson[p]
+            else:
+                rson[p] = r
+                dad[r] = p
+                return
+        else:
+            if lson[p] != NIL:
+                p = lson[p]
+            else:
+                lson[p] = r
+                dad[r] = p
+                return
+        for i in xrange(1, F):
+            cmp = text_buf[r + i] - text_buf[p + i]
+            if cmp != 0:
+                break
+        if i > match_length:
+            match_position = p
+            match_length = i
+            if match_length >= F:
+                break
+    dad[r] = dad[p]
+    lson[r] = lson[p]
+    rson[r] = rson[p]
+    dad[lson[p]] = r
+    dad[rson[p]] = r
+    if rson[dad[p]] == p:
+        rson[dad[p]] = r
+    else:
+        lson[dad[p]] = r
+    dad[p] = NIL
+    
+def deleteNode(p):
+    q = 0
+    if dad[p] == NIL:
+        return
+    if rson[p] == NIL:
+        q = lson[p]
+    elif lson[p] == NIL:
+        q = rson[p]
+    else:
+        q = lson[p]
+        if rson[q] != NIL:
+            while True:
+                q = rson[q]
+                if rson[q] == NIL:
+                    break
+            rson[dad[q]] = lson[q]
+            dad[lson[q]] = dad[q]
+            lson[q] = lson[p]
+            dad[lson[p]] = q
+        rson[q] = rson[p]
+        dad[rson[p]] = q
+    dad[q] = dad[p]
+    if rson[dad[p]] == p:
+        rson[dad[p]] = q
+    else:
+        lson[dad[p]] = q
+    dad[p] = NIL
+
+def encode(inputBuf, offset, length):
+    #codesize=0
+    #textsize=0
+    i, c, len, r, s, last_match_length, code_buf_ptr, mask = 0, 0, 0, 0, 0, 0, 0, 0
+    code_buf = array('B', '\0' * 17)
+    initTree()
+    code_buf[0] = 0
+    code_buf_ptr = mask = 1
+    s = 0
+    r = N - F
+    outputBuf = array('B')
+    p = offset
+    for i in xrange(s, r):
+        text_buf[i] = '\0'
+    len = 0
+    while True:
+        text_buf = c
+        if len >= F:
+            return
+        if p >= length + offset:
+            return
+        c = inputBuf[p]
+        p += 1
+        len += 1
+    textsize = len
+    if textsize == 0:
+        return
+    for i in xrange(1, F):
+        insertNode(r - i)
+    insertNode(r)
+    while True:
+        if match_length > len:
+            match_length = len
+        if match_length <= THRESHOLD:
+            match_length = 1
+            code_buf[0] |= mask
+            code_buf[code_buf_ptr] = text_buf[r]
+            code_buf_ptr += 1
+        else:
+            code_buf[code_buf_ptr] = match_position & 0xff
+            code_buf_ptr += 1
+            code_buf[code_buf_ptr] = ((match_position >> 4) & mask1) | (match_length - (THRESHOLD + 1))
+        mask <<= 1
+        if mask == 0:
+            for i in xrange(0, code_buf_ptr):
+                outputBuf.append(code_buf[i])
+            codesize += code_buf_ptr
+            code_buf[0] = 0
+            code_buf_ptr = mask = 1
+        last_match_length = match_length
+        i = 0
+        while True:
+            deleteNode(s)
+            text_buf[s] = c
+            if s < F - 1:
+                text_buf[s + N] = c
+            s = (s + 1) & (N - 1)
+            r = (r + 1) & (N - 1)
+            insertNode(r)
+            
+            if i >= last_match_length:
+                break
+            if p >= length + offset:
+                return
+            c = inputBuf[p]
+            p += 1
+            i += 1
+        textsize += i
+        if textsize > printcount:
+            print textsize
+            printcount += 1024
+        while i < last_match_length:
+            i += 1
+            deleteNode(s)
+            s = (s + 1) & (N - 1)
+            r = (r + 1) & (N - 1)
+            len -= 1
+            if len>0:
+                insertNode(r)
+        if len==0:
+            break
+    if code_buf_ptr>1:
+        for i in xrange(0,code_buf_ptr):
+            outputBuf.append(code_buf[i])
+        codesize+=code_buf_ptr
+    print 'In: '+textsize+' bytes\n'
+    print 'Out: '+codesize+' bytes\n'
+        
+    
 def decode(inputBuf, offset, length):
     i = 0
     j = 0
@@ -44,8 +235,8 @@ def decode(inputBuf, offset, length):
                 break
             j = inputBuf[p]
             p += 1
-            i |= ((j & 0xe0) << 3)
-            j = (j & 0x1f) + THRESHOLD
+            i |= ((j & maskl) << 3)
+            j = (j & mask2) + THRESHOLD
             for k in xrange(0, j + 1):
                 c = text_buf[(i + k) & (N - 1)]
                 outputBuf.append(c)
