@@ -14,35 +14,38 @@
 #**************************************************************/
 
 from array import array
-from objc import nil
 
 N = 2048
 F = 33
 THRESHOLD = 1
 
-NIL = N
+NIL = 0
 
-maskl = 0xe0
+mask1 = 0xe0
 mask2 = 0x1f
 
 text_buf = array('B', '\0' * (N + F))
-match_position = 0
-match_length = 0
-lson = array('B', '\0' * (N + 1))
-rson = array('B', '\0' * (N + 257))
-dad = array('B', '\0' * (N + 1))
+
+lson = [0] * (N + 1)
+rson = [0] * (N + 257)
+dad = [0] * (N + 1)
 
 textsize = 0
 codesize = 0
 printcount = 0
 
+match_position = 0
+match_length = 0
+
 def initTree():
+    global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     for i in xrange(N + 1, N + 257):
         rson[i] = NIL
     for i in xrange(0, N):
         dad[i] = NIL
 
 def insertNode(r):
+    global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     cmp = 1
     p = N + 1 + text_buf[r]
     while True:
@@ -60,6 +63,7 @@ def insertNode(r):
                 lson[p] = r
                 dad[r] = p
                 return
+        i = 0
         for i in xrange(1, F):
             cmp = text_buf[r + i] - text_buf[p + i]
             if cmp != 0:
@@ -81,6 +85,7 @@ def insertNode(r):
     dad[p] = NIL
     
 def deleteNode(p):
+    global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     q = 0
     if dad[p] == NIL:
         return
@@ -109,10 +114,11 @@ def deleteNode(p):
     dad[p] = NIL
 
 def encode(inputBuf, offset, length):
+    global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     #codesize=0
     #textsize=0
     i, c, len, r, s, last_match_length, code_buf_ptr, mask = 0, 0, 0, 0, 0, 0, 0, 0
-    code_buf = array('B', '\0' * 17)
+    code_buf = array('B', '\0' * (F - 1))
     initTree()
     code_buf[0] = 0
     code_buf_ptr = mask = 1
@@ -121,21 +127,21 @@ def encode(inputBuf, offset, length):
     outputBuf = array('B')
     p = offset
     for i in xrange(s, r):
-        text_buf[i] = '\0'
+        text_buf[i] = 0
     len = 0
     while True:
-        text_buf = c
+        text_buf[r + len] = c
         if len >= F:
-            return
+            break
         if p >= length + offset:
-            return
+            break
         c = inputBuf[p]
         p += 1
         len += 1
     textsize = len
     if textsize == 0:
         return
-    for i in xrange(1, F):
+    for i in xrange(1, F + 1):
         insertNode(r - i)
     insertNode(r)
     while True:
@@ -149,7 +155,9 @@ def encode(inputBuf, offset, length):
         else:
             code_buf[code_buf_ptr] = match_position & 0xff
             code_buf_ptr += 1
+            print code_buf_ptr
             code_buf[code_buf_ptr] = ((match_position >> 4) & mask1) | (match_length - (THRESHOLD + 1))
+            code_buf_ptr += 1
         mask <<= 1
         if mask == 0:
             for i in xrange(0, code_buf_ptr):
@@ -171,7 +179,7 @@ def encode(inputBuf, offset, length):
             if i >= last_match_length:
                 break
             if p >= length + offset:
-                return
+                break
             c = inputBuf[p]
             p += 1
             i += 1
@@ -185,17 +193,18 @@ def encode(inputBuf, offset, length):
             s = (s + 1) & (N - 1)
             r = (r + 1) & (N - 1)
             len -= 1
-            if len>0:
+            if len > 0:
                 insertNode(r)
-        if len==0:
+        i += 1
+        if len <= 0:
             break
-    if code_buf_ptr>1:
-        for i in xrange(0,code_buf_ptr):
+    if code_buf_ptr > 1:
+        for i in xrange(0, code_buf_ptr):
             outputBuf.append(code_buf[i])
-        codesize+=code_buf_ptr
-    print 'In: '+textsize+' bytes\n'
-    print 'Out: '+codesize+' bytes\n'
-        
+        codesize += code_buf_ptr
+    print 'In: ' + textsize + ' bytes\n'
+    print 'Out: ' + codesize + ' bytes\n'
+    return outputBuf
     
 def decode(inputBuf, offset, length):
     i = 0
