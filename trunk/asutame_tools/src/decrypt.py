@@ -118,6 +118,7 @@ def encrypt(buf, offset, length, delta, keyMask):
         ebp -= 0x6E58A5C2
         ebp = ebp & 0xFFFFFFFF
         ebp = ebp ^ unpack('L', key[keyIndex:keyIndex + 4])[0]
+        
         buf[i:i + 4] = array('B', pack('L', ebp))
         
         i = i + 4
@@ -183,8 +184,6 @@ def decryptPs2(buf, offset, length, key):
     ecx = dl
     cl = ecx & 0xff
     
-    #al = 0x3E
-    #cl = 0x03
     for i in xrange(offset, offset + length):
         dl = buf[i]
         dl = dl - 0x7C
