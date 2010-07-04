@@ -19,7 +19,7 @@ N = 2048
 F = 33
 THRESHOLD = 1
 
-NIL = 0
+NIL = N
 
 mask1 = 0xe0
 mask2 = 0x1f
@@ -48,6 +48,8 @@ def insertNode(r):
     global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     cmp = 1
     p = N + 1 + text_buf[r]
+    rson[r] = lson[r] = NIL
+    match_length = 0
     while True:
         if cmp >= 0:
             if rson[p] != NIL:
@@ -68,6 +70,7 @@ def insertNode(r):
             cmp = text_buf[r + i] - text_buf[p + i]
             if cmp != 0:
                 break
+        i += 1
         if i > match_length:
             match_position = p
             match_length = i
@@ -129,6 +132,7 @@ def encode(inputBuf, offset, length):
     for i in xrange(s, r):
         text_buf[i] = 0
     len = 0
+    i += 1
     while True:
         text_buf[r + len] = c
         if len >= F:
@@ -143,6 +147,7 @@ def encode(inputBuf, offset, length):
         return
     for i in xrange(1, F + 1):
         insertNode(r - i)
+    i += 1
     insertNode(r)
     while True:
         if match_length > len:
@@ -155,10 +160,10 @@ def encode(inputBuf, offset, length):
         else:
             code_buf[code_buf_ptr] = match_position & 0xff
             code_buf_ptr += 1
-            print code_buf_ptr
             code_buf[code_buf_ptr] = ((match_position >> 4) & mask1) | (match_length - (THRESHOLD + 1))
             code_buf_ptr += 1
         mask <<= 1
+        mask &= 0xff
         if mask == 0:
             for i in xrange(0, code_buf_ptr):
                 outputBuf.append(code_buf[i])
@@ -185,7 +190,7 @@ def encode(inputBuf, offset, length):
             i += 1
         textsize += i
         if textsize > printcount:
-            print textsize
+            #print textsize
             printcount += 1024
         while i < last_match_length:
             i += 1
@@ -201,9 +206,10 @@ def encode(inputBuf, offset, length):
     if code_buf_ptr > 1:
         for i in xrange(0, code_buf_ptr):
             outputBuf.append(code_buf[i])
+        i += 1
         codesize += code_buf_ptr
-    print 'In: ' + textsize + ' bytes\n'
-    print 'Out: ' + codesize + ' bytes\n'
+    print 'In: ' + str(textsize) + ' bytes\n'
+    print 'Out: ' + str(codesize) + ' bytes\n'
     return outputBuf
     
 def decode(inputBuf, offset, length):
@@ -244,7 +250,7 @@ def decode(inputBuf, offset, length):
                 break
             j = inputBuf[p]
             p += 1
-            i |= ((j & maskl) << 3)
+            i |= ((j & mask1) << 3)
             j = (j & mask2) + THRESHOLD
             for k in xrange(0, j + 1):
                 c = text_buf[(i + k) & (N - 1)]
