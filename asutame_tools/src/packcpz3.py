@@ -99,7 +99,7 @@ while i < indexCount:
                     sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
                     sentence = sentence.split('\0')[0]
                     if sentence == '':
-                        #itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1))
+                        itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1 + skipoffset))
                         #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
                         continue
                     if count < skipcount:
