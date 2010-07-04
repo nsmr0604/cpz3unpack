@@ -36,7 +36,7 @@ keyMask = keyMask ^ 0x7BF4A539
 #解密index
 delta = 12 - 20
 
-decrypt(fullHeader, 0x14, indexLength + 4, delta, 0x13, keyMask)
+decrypt(fullHeader, 0x14, indexLength + 4, delta, keyMask)
 
 #循环提取文件
 
@@ -54,7 +54,7 @@ while i < indexCount:
         item = array('B')
         item.fromfile(cpz, itemLength)
         #item = cpz.read(itemLength)
-        decrypt(item, 0, itemLength, 12, 0x11, itemKeyMask)
+        decrypt(item, 0, itemLength, 12, itemKeyMask)
         
         
         with open(outputFolder + itemFilename, 'wb') as outputFile:
