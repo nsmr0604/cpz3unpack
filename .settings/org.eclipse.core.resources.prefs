@@ -1,6 +1,7 @@
-#Sun Jul 04 13:14:25 CST 2010
+#Sun Jul 04 13:52:58 CST 2010
 eclipse.preferences.version=1
 encoding//asutame_tools/src/decrypt.py=utf-8
 encoding//asutame_tools/src/lzss.py=utf-8
+encoding//asutame_tools/src/packcpz3.py=utf-8
 encoding//asutame_tools/src/test.py=utf-8
 encoding//asutame_tools/src/unpackcpz3.py=utf-8
