@@ -63,49 +63,49 @@ while i < indexCount:
             decryptPs2(item, 0x30, itemLength - 0x30, unpack('L', item[0x0c:0x10])[0])
             itemHeader = item[0:0x30]
             itemContent = decode(item, 0x30, itemLength - 0x30)
-#            
-#            scriptLength = unpack('L', itemHeader[0x1C:0x20])[0]
-#            scriptOffset = len(itemContent) - scriptLength
-#            
-#            #读取txt文件，封入封包
-#            txtOffset = 0
-#            
-#            #新文本的偏移和长度
-#            textOffset = {}
-#            text = ''
-#            count = 0
-#            with open(outputFolder + itemFilename + '.txt', 'rb') as inputTxtFile:
-#                for t in inputTxtFile:
-#                    if t.startswith(';'):
-#                        continue
-#                    eq = t.find('=')
-#                    line = t[eq + 1:].strip('\r\n') + '\0'
-#                    textOffset[count] = (len(text), len(line))
-#                    text += line
-#                    count += 1
-#            count = 0
-#            lastOffset = (0, 0)
-#            for j in xrange(0, scriptOffset - 8):
-#                if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
-#                    sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
-#                    sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
-#                    sentence = sentence.split('\0')[0]
-#                    if sentence == '':
-#                        #sitemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1))
-#                        #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
-#                        continue
-#                    
-#                    itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0]))
-#                    lastOffset = textOffset[count]
-#                    count += 1
-#            
-#            textArray = array('B', text)
-#            itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
-#            itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + len(textArray)))
-#
-#            itemContent = itemContent[0:scriptOffset] + textArray
-#    
-#            #压缩
+            
+            scriptLength = unpack('L', itemHeader[0x1C:0x20])[0]
+            scriptOffset = len(itemContent) - scriptLength
+            
+            #读取txt文件，封入封包
+            txtOffset = 0
+            
+            #新文本的偏移和长度
+            textOffset = {}
+            text = ''
+            count = 0
+            with open(outputFolder + itemFilename + '.txt', 'rb') as inputTxtFile:
+                for t in inputTxtFile:
+                    if t.startswith(';'):
+                        continue
+                    eq = t.find('=')
+                    line = t[eq + 1:].strip('\r\n') + '\0'
+                    textOffset[count] = (len(text), len(line))
+                    text += line
+                    count += 1
+            count = 0
+            lastOffset = (0, 0)
+            for j in xrange(0, scriptOffset - 8):
+                if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
+                    sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
+                    sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
+                    sentence = sentence.split('\0')[0]
+                    if sentence == '':
+                        #itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1))
+                        #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
+                        continue
+                    
+                    itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0]))
+                    lastOffset = textOffset[count]
+                    count += 1
+            
+            textArray = array('B', text)
+            #itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
+            #itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + len(textArray)))
+
+            itemContent = itemContent[0:scriptOffset] + textArray
+    
+            #压缩
             itemContent = encode(itemContent, 0, len(itemContent))
             item = itemHeader + itemContent
             encryptPs2(item, 0x30, len(itemContent), unpack('L', item[0x0c:0x10])[0])
