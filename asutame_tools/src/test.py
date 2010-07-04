@@ -15,7 +15,7 @@ with open(inputFilename,'rb') as inputFile:
     inputBuffer.fromfile(inputFile,os.stat(inputFilename).st_size)
     result = encode(inputBuffer,0,os.stat(inputFilename).st_size)
     print len(inputBuffer)
-    print result
+    print str(result)
     print decode(result,0,len(result))
     print len(decode(result,0,len(result)))
     print inputBuffer
