@@ -214,8 +214,8 @@ def encode(inputBuf, offset, length):
             outputBuf.append(code_buf[i])
         i += 1
         codesize += code_buf_ptr
-    print 'In: ' + str(textsize) + ' bytes\n'
-    print 'Out: ' + str(codesize) + ' bytes\n'
+    #print 'In: ' + str(textsize) + ' bytes\n'
+    #print 'Out: ' + str(codesize) + ' bytes\n'
     return outputBuf
     
 def decode(inputBuf, offset, length):

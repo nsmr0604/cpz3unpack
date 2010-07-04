@@ -8,7 +8,7 @@ from lzss import decode
 
 cpzFilename = ur"C:\games\明日の君と逢うために\data\pack\script.cpz"
 newFilename = ur"C:\games\明日の君と逢うために\data\pack\script.header"
-outputFolder = ur"C:\games\明日の君と逢うために\data\pack\script\\"
+outputFolder = ur"C:\games\明日の君と逢うために\data\pack\script2\\"
 
 #解密文件头
 with open(cpzFilename, 'rb') as cpz:
@@ -47,6 +47,10 @@ while i < indexCount:
     itemLength = unpack('L', fullHeader[pos + 4:pos + 8])[0]
     itemOffset = unpack('L', fullHeader[pos + 8:pos + 0x0C])[0]
     itemFilename = fullHeader[pos + 0x18:pos + itemIndexLength].tostring().strip('\0')
+    if itemFilename != 'snky00.ps2':
+        i += 1
+        pos += itemIndexLength
+        continue
     itemKeyMask = unpack('L', fullHeader[pos + 0x14:pos + 0x18])[0]
     itemKeyMask = itemKeyMask ^ 0xC7F5DA63
     with open(cpzFilename, 'rb') as cpz:
@@ -95,5 +99,5 @@ while i < indexCount:
     i += 1
 
 #写入
-with open(newFilename, 'wb') as newCpz:
-    fullHeader.write(newCpz)
+#with open(newFilename, 'wb') as newCpz:
+#    fullHeader.write(newCpz)
