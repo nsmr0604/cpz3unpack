@@ -74,9 +74,17 @@ while i < indexCount:
             textOffset = {}
             text = ''
             count = 0
+            #<则不动的文本的序号297
+            skipcount = 297
+            #不跳过的第一条文本的原偏移。从这个位置开始放入新文本
+            skipoffset = 0
+            
             with open(outputFolder + itemFilename + '.txt', 'rb') as inputTxtFile:
                 for t in inputTxtFile:
                     if t.startswith(';'):
+                        continue
+                    if count < skipcount:
+                        count += 1
                         continue
                     eq = t.find('=')
                     line = t[eq + 1:].strip('\r\n') + '\0'
@@ -94,16 +102,22 @@ while i < indexCount:
                         #itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1))
                         #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
                         continue
+                    if count < skipcount:
+                        count += 1
+                        continue
+                    if count == skipcount:
+                        skipoffset = sentenceOffset
                     
-                    itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0]))
+                    itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0] + skipoffset))
                     lastOffset = textOffset[count]
                     count += 1
             
             textArray = array('B', text)
-            #itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
+            itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
             #itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + len(textArray)))
 
-            itemContent = itemContent[0:scriptOffset] + textArray
+            #itemContent = itemContent[0:scriptOffset] + textArray
+            itemContent = itemContent[0:scriptOffset + skipoffset] + textArray
     
             #压缩
             itemContent = encode(itemContent, 0, len(itemContent))
@@ -111,7 +125,7 @@ while i < indexCount:
             encryptPs2(item, 0x30, len(itemContent), unpack('L', item[0x0c:0x10])[0])
             
             #加密
-            encrypt(item, 0, len(itemContent)+0x30, 12, itemKeyMask)
+            encrypt(item, 0, len(itemContent) + 0x30, 12, itemKeyMask)
         
         itemOffset = len(newCpzContent)
         newCpzHeader[pos + 8:pos + 0x0C] = array('B', pack('L', itemOffset))
