@@ -1,0 +1,28 @@
+Search for differences
+
+1. C:\games\明日の君と逢うために\cmvs.exe: 1,290,240 bytes
+2. C:\games\明日の君と逢うために\cmvs4.exe: 1,290,240 bytes
+Offsets: hexadec.
+
+  34D5:	81	80
+  34D7:	04	12
+  34D8:	3C	90
+  34D9:	9F	90
+  34DA:	76	90
+  34DB:	06	90
+  34DC:	04	90
+  34DD:	20	90
+  34DE:	3C	90
+  34DF:	1C	90
+  34E0:	77	90
+  34E1:	08	90
+ 337EC:	80	86
+ 3386C:	80	86
+ 3394C:	80	86
+ 34AF7:	74	EB
+ 39853:	74	EB
+ 3986B:	74	EB
+ 39A4D:	74	EB
+ 39A5B:	74	EB
+
+20 difference(s) found. 

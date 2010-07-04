@@ -114,7 +114,8 @@ while i < indexCount:
             
             textArray = array('B', text)
             itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
-            #itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + len(textArray)))
+            #itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + skipoffset + len(textArray)))
+            itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset * 2 + skipoffset + len(textArray)))
 
             #itemContent = itemContent[0:scriptOffset] + textArray
             itemContent = itemContent[0:scriptOffset + skipoffset] + textArray
