@@ -3,12 +3,12 @@
 
 from struct import unpack, pack
 from array import array
-from decrypt import decrypt, decryptPs2
+from decrypt import decrypt, decryptPs2, decryptPb3
 from lzss import decode
 
-cpzFilename = ur"C:\games\明日の君と逢うために\data\pack\script.cpz"
+cpzFilename = ur"C:\games\明日の君と逢うために\data\pack\chip.cpz"
 newFilename = ur"C:\games\明日の君と逢うために\data\pack\script.header"
-outputFolder = ur"C:\games\明日の君と逢うために\data\pack\script2\\"
+outputFolder = ur"C:\games\明日の君と逢うために\data\pack\chip\\"
 
 #解密文件头
 with open(cpzFilename, 'rb') as cpz:
@@ -47,7 +47,7 @@ while i < indexCount:
     itemLength = unpack('L', fullHeader[pos + 4:pos + 8])[0]
     itemOffset = unpack('L', fullHeader[pos + 8:pos + 0x0C])[0]
     itemFilename = fullHeader[pos + 0x18:pos + itemIndexLength].tostring().strip('\0')
-    if itemFilename != 'snky00.ps2':
+    if itemFilename != 'config02_chip.pb3':
         i += 1
         pos += itemIndexLength
         continue
@@ -92,6 +92,9 @@ while i < indexCount:
                 itemHeader.tofile(outputFile)
                 itemContent.tofile(outputFile)
                 #item.tofile(outputFile)
+            elif itemFilename.endswith('.pb3'):
+                decryptPb3(item, 0, itemLength)
+                item.tofile(outputFile)
             else:
                 item.tofile(outputFile)
             

@@ -224,10 +224,16 @@ def encryptPs2(buf, offset, length, key):
     
     
     
-    
-    
-    
-    
+#offset是指文件头（'PB3'所在的位置）
+def decryptPb3(buf, offset, length):
+    key = unpack('H', buf[length - 3:length - 1])[0]
+    for i in xrange(0x08, 0x34, 2):
+        buf[i] ^= (key & 0xff)
+        buf[i + 1] ^= (key & 0xff00) >> 8
+
+    esi = length - 0x2f
+    for i in xrange(0, 0x2c):
+        buf[0x08 + i] = (buf[0x08 + i] - buf[esi + i]) & 0xff
     
     
     
