@@ -19,6 +19,7 @@ class ScriptReader(object):
             if line == '':
                 return result
             result.append(line)
+        return result
             
     def read_line(self):
         '''
