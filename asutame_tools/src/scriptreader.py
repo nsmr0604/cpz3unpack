@@ -20,8 +20,8 @@ class ScriptReader(object):
                 return result
             result.append(line)
         return result
-            
-    def read_line(self):
+
+    def read_id_and_line(self):
         '''
         读取下一行
         '''
@@ -32,17 +32,35 @@ class ScriptReader(object):
             
             if line[0] == ';' or len(line.rstrip()) == 0 or line.find('=') == -1:
                 continue
-            return line.split('=')[1].rstrip()
-        pass
+            id_content = line.split('=')
+            return (id_content[0], id_content[1].rstrip())
+        return None
+
+    def read_line(self):
+        '''
+        读取下一行
+        '''
+        r = self.read_id_and_line()
+        if r:
+            return r[1]
+        return ''
     
     def goto_line(self, lineno):
         '''
         跳到指定的行数
         '''
-        pass
+        self.script_file.seek(0)
+        for i in xrange(0, lineno):
+            self.script_file.readline()
     
-    def find_next_target_by_source(self):
+    def find_next_target_by_source(self, search):
         '''
-        在当前位置之后根据未翻译的源文本查找第一处已翻译的文本
+        在当前位置之后根据未翻译的源文本查找第一处已翻译的文本，返回(\d+)=search的\d+
         '''
-        pass
+        while True:
+            r = self.read_id_and_line()
+            if r:
+                if r[1] == search:
+                    return int(r[0])
+            else:
+                return None
