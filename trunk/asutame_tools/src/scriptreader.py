@@ -64,3 +64,17 @@ class ScriptReader(object):
                     return int(r[0])
             else:
                 return None
+            
+    def get_line_by_id(self, id):
+        '''
+        在当前位置之后根据id查找第一处已翻译的文本，返回文本
+        '''
+        while True:
+            r = self.read_id_and_line()
+            if r:
+                if r[0] == str(id):
+                    return r[1]
+            else:
+                return None
+        
+        
