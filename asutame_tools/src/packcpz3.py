@@ -5,10 +5,17 @@ from struct import unpack, pack
 from array import array
 from decrypt import decrypt, encrypt, decryptPs2, encryptPs2
 from lzss import decode, encode
+import codecs
+from scriptgetter import ScriptGetter
 
-cpzFilename = ur"C:\games\明日の君と逢うために\data\pack\scriptback.cpz"
-newFilename = ur"C:\games\明日の君と逢うために\data\pack\script.cpz"
-outputFolder = ur"C:\games\明日の君と逢うために\data\pack\script\\"
+cpzFilename = ur"Z:\games\明日の君と逢うために\data\pack\scriptback.cpz"
+newFilename = ur"Z:\games\明日の君と逢うために\data\pack\script.cpz"
+
+relation_filename = ur"C:\workspace\asutame_text\etc\\relation.txt"
+source_path = ur"C:\workspace\asutame_text\source" + u"\\"
+translated_path = ur"C:\workspace\asutame_text\原档" + u"\\"
+source_encoding = "shift-jis"
+translated_encoding = "gbk"
 
 #解密文件头
 with open(cpzFilename, 'rb') as cpz:
@@ -55,7 +62,7 @@ while i < indexCount:
         item = array('B')
         item.fromfile(cpz, itemLength)
         
-        if itemFilename == 'snky00.ps2':
+        if True:
             decrypt(item, 0, itemLength, 12, itemKeyMask)
             
             #解密&解压ps2
@@ -79,54 +86,68 @@ while i < indexCount:
             #不跳过的第一条文本的原偏移。从这个位置开始放入新文本
             skipoffset = 0
             
-            with open(outputFolder + itemFilename + '.txt', 'rb') as inputTxtFile:
-                for t in inputTxtFile:
-                    if t.startswith(';'):
-                        continue
-                    if count < skipcount:
-                        count += 1
-                        continue
-                    eq = t.find('=')
-                    line = t[eq + 1:].strip('\r\n') + '\0'
-                    textOffset[count] = (len(text), len(line))
-                    text += line
-                    count += 1
-            count = 0
-            lastOffset = (0, 0)
-            for j in xrange(0, scriptOffset - 8):
-                if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
-                    sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
-                    sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
-                    sentence = sentence.split('\0')[0]
-                    if sentence == '':
-                        itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1 + skipoffset))
-                        #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
-                        continue
-                    if count < skipcount:
-                        count += 1
-                        continue
-                    if count == skipcount:
-                        skipoffset = sentenceOffset
-                    
-                    itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0] + skipoffset))
-                    lastOffset = textOffset[count]
-                    count += 1
+            getter = ScriptGetter(itemFilename + '.txt', relation_filename, source_path, translated_path, source_encoding, translated_encoding)
             
-            textArray = array('B', text)
-            itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
-            #itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + skipoffset + len(textArray)))
-            itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset * 2 + skipoffset + len(textArray)))
-
-            #itemContent = itemContent[0:scriptOffset] + textArray
-            itemContent = itemContent[0:scriptOffset + skipoffset] + textArray
+            if hasattr(getter, 'start_id'):
+                skipcount = getter.start_id
+                
+                with open(source_path + itemFilename + '.txt', 'rb') as inputTxtFile:
+                    for t in inputTxtFile:
+                        if t.startswith(';'):
+                            continue
+                        if len(t.strip()) == 0:
+                            continue
+                        if count < skipcount:
+                            count += 1
+                            continue
+                        eq = t.find('=')
+                        line = t[eq + 1:].strip('\r\n') + '\0'
+                        newline = getter.get_script(codecs.decode(t.split('=')[0], source_encoding))
+                        if newline:
+                            try:
+                                line = codecs.encode(newline, translated_encoding)
+                            except UnicodeEncodeError:
+                                print "ERROR: can't encode "+newline
+                        
+                        textOffset[count] = (len(text), len(line))
+                        text += line
+                        count += 1
+                count = 0
+                lastOffset = (0, 0)
+                for j in xrange(0, scriptOffset - 8):
+                    if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
+                        sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
+                        sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
+                        sentence = sentence.split('\0')[0]
+                        if sentence == '':
+                            itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1 + skipoffset))
+                            #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
+                            continue
+                        if count < skipcount:
+                            count += 1
+                            continue
+                        if count == skipcount:
+                            skipoffset = sentenceOffset
+                        
+                        itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0] + skipoffset))
+                        lastOffset = textOffset[count]
+                        count += 1
+                
+                textArray = array('B', text)
+                itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))
+                #itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset + skipoffset + len(textArray)))
+                itemHeader[0x28:0x2C] = array('B', pack('L', scriptOffset * 2 + skipoffset + len(textArray)))
     
-            #压缩
-            itemContent = encode(itemContent, 0, len(itemContent))
-            item = itemHeader + itemContent
-            encryptPs2(item, 0x30, len(itemContent), unpack('L', item[0x0c:0x10])[0])
-            
-            #加密
-            encrypt(item, 0, len(itemContent) + 0x30, 12, itemKeyMask)
+                #itemContent = itemContent[0:scriptOffset] + textArray
+                itemContent = itemContent[0:scriptOffset + skipoffset] + textArray
+        
+                #压缩
+                itemContent = encode(itemContent, 0, len(itemContent))
+                item = itemHeader + itemContent
+                encryptPs2(item, 0x30, len(itemContent), unpack('L', item[0x0c:0x10])[0])
+                
+                #加密
+                encrypt(item, 0, len(itemContent) + 0x30, 12, itemKeyMask)
         
         itemOffset = len(newCpzContent)
         newCpzHeader[pos + 8:pos + 0x0C] = array('B', pack('L', itemOffset))

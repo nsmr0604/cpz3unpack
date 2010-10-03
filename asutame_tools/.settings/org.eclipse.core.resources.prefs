@@ -1,4 +1,4 @@
-#Sat Oct 02 19:50:49 CST 2010
+#Sun Oct 03 15:38:17 CST 2010
 eclipse.preferences.version=1
 encoding//doc/cpz3.txt=UTF-8
 encoding//doc/ps2.txt=UTF-8
@@ -7,6 +7,7 @@ encoding//src/decrypt.py=utf-8
 encoding//src/getrelations.py=utf-8
 encoding//src/lzss.py=utf-8
 encoding//src/packcpz3.py=utf-8
+encoding//src/scriptgetter.py=utf-8
 encoding//src/scriptreader.py=utf-8
 encoding//src/test.py=utf-8
 encoding//src/text.py=utf-8
