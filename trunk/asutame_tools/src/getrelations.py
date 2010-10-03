@@ -28,7 +28,7 @@ results = {}
 
 def get_files(dict, path_to_search, encoding):
     for filename in [os.path.join(root, afile) for root, dirs, files in os.walk(path_to_search)\
-                   for afile in files if afile.rfind('.txt') == len(afile) - 4]:
+                     for afile in files if afile.rfind('.txt') == len(afile) - 4]:
         f = codecs.open(filename, 'r', encoding)
         cache = f.read()
         f.close()
@@ -76,10 +76,15 @@ keys = results.keys()
 keys.sort()
 
 for k in keys:
-    print k.replace(source_path, '') + '\t' + results[k].replace(translated_path, '')
-
-
-
-
+    f_s = codecs.open(k, 'r', source_encoding)
+    f_t = codecs.open(results[k], 'r', translated_encoding)
+    s_s = ScriptReader(f_s)
+    s_t = ScriptReader(f_t)
+    line_t = s_t.read_line()
+    s_t.goto_line(0)
+    line_s_no = s_s.find_next_target_by_source(line_t)
+    line_t_no = s_t.find_next_target_by_source(line_t)
+    
+    print k.replace(source_path, '') + '\t' + results[k].replace(translated_path, '') + '\t' + str(line_s_no) + '\t' + str(line_t_no)
 
 
