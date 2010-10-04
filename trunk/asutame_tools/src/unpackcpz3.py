@@ -64,7 +64,7 @@ while i < indexCount:
         with open(outputFolder + itemFilename, 'wb') as outputFile:
         
             #解密&解压ps2
-            if itemFilename.endswith('.ps2'):
+            if itemFilename.endswith('snky00.ps2'):
                 decryptPs2(item, 0x30, itemLength - 0x30, unpack('L', item[0x0c:0x10])[0])
                 itemHeader = item[0:0x30]
                 itemContent = decode(item, 0x30, itemLength - 0x30)
