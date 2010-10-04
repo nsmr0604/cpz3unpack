@@ -17,12 +17,15 @@ class ScriptGetter(object):
         self.source_file = codecs.open(os.path.join(source_path, source_filename))
         
         if relation.has_key(source_filename):
-            translated_info = relation[source_filename]
-            translated_filename = os.path.join(translated_path, translated_info[0])
-            self.translated_file = codecs.open(translated_filename, 'r', translated_encoding)
-            self.translated_reader = ScriptReader(self.translated_file)
-            self.start_id = translated_info[1]
-            self.translated_id = translated_info[2]
+            try:
+                translated_info = relation[source_filename]
+                translated_filename = os.path.join(translated_path, translated_info[0])
+                self.translated_file = codecs.open(translated_filename, 'r', translated_encoding)
+                self.translated_reader = ScriptReader(self.translated_file)
+                self.start_id = translated_info[1]
+                self.translated_id = translated_info[2]
+            except:
+                pass
     
     def get_script(self, id):
         id = int(id)
