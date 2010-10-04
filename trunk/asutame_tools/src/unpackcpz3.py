@@ -71,7 +71,6 @@ while i < indexCount:
                 
                 scriptLength = unpack('L', itemHeader[0x1C:0x20])[0]
                 scriptOffset = len(itemContent) - scriptLength
-                
 
                 with open(outputFolder + itemFilename + '.txt', 'wb') as outputTxtFile:
                     count = 0
