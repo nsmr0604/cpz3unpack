@@ -13,7 +13,7 @@ newFilename = ur"Z:\games\明日の君と逢うために\data\pack\script.cpz"
 
 relation_filename = ur"C:\workspace\asutame_text\etc\\relation.txt"
 source_path = ur"C:\workspace\asutame_text\source" + u"\\"
-translated_path = ur"C:\workspace\asutame_text\原档" + u"\\"
+translated_path = ur"C:\workspace\asutame_text\已译" + u"\\"
 source_encoding = "shift-jis"
 translated_encoding = "gbk"
 
@@ -62,7 +62,8 @@ while i < indexCount:
         item = array('B')
         item.fromfile(cpz, itemLength)
         
-        if True:
+        #只封包共通线
+        if itemFilename.find("snky")!=-1:
             decrypt(item, 0, itemLength, 12, itemKeyMask)
             
             #解密&解压ps2
@@ -105,9 +106,11 @@ while i < indexCount:
                         newline = getter.get_script(codecs.decode(t.split('=')[0], source_encoding))
                         if newline:
                             try:
-                                line = codecs.encode(newline, translated_encoding)
+#                                temp = codecs.decode(t[eq + 1:].strip('\r\n'), 'shift-jis')
+                                line = codecs.encode(newline, translated_encoding) + '\0'
+                                pass
                             except UnicodeEncodeError:
-                                print "ERROR: can't encode "+newline
+                                print "ERROR: can't encode " + newline
                         
                         textOffset[count] = (len(text), len(line))
                         text += line
