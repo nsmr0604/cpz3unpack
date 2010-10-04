@@ -84,7 +84,7 @@ while i < indexCount:
             #新文本的偏移和长度
             textOffset = {}
             text = ''
-            count = 0
+            count = 1
             #<则不动的文本的序号297
 #            skipcount = 297
             #不跳过的第一条文本的原偏移。从这个位置开始放入新文本
@@ -96,7 +96,7 @@ while i < indexCount:
                         continue
                     if len(t.strip()) == 0:
                         continue
-                    if count < skipcount:
+                    if count < skipcount and t.find('=') >= 0:
                         count += 1
                         continue
                     eq = t.find('=')
@@ -113,7 +113,7 @@ while i < indexCount:
                     textOffset[count] = (len(text), len(line))
                     text += line
                     count += 1
-            count = 0
+            count = 1
             lastOffset = (0, 0)
             for j in xrange(0, scriptOffset - 8):
                 if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
