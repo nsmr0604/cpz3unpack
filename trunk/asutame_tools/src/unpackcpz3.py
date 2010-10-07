@@ -6,7 +6,7 @@ from array import array
 from decrypt import decrypt, decryptPs2, decryptPb3
 from lzss import decode
 
-cpzFilename = ur"Z:\games\明日の君と逢うために\data\pack\script.cpz"
+cpzFilename = ur"Z:\games\明日の君と逢うために\data\pack\scriptback.cpz"
 newFilename = ur"Z:\games\明日の君と逢うために\data\pack\script.header"
 outputFolder = ur"Z:\games\明日の君と逢うために\data\pack\script\\"
 
