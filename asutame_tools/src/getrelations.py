@@ -7,8 +7,8 @@ import codecs
 from array import array
 from scriptreader import ScriptReader
 
-source_path = ur"C:\workspace\asutame_text\source" + u"\\"
-translated_path = ur"C:\workspace\asutame_text\原档" + u"\\"
+source_path = ur"D:\data\workspace\asutame_text\source" + u"\\"
+translated_path = ur"D:\data\workspace\asutame_text\原档" + u"\\"
 
 source_encoding = "shift-jis"
 translated_encoding = "gbk"

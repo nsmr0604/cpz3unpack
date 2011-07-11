@@ -6,22 +6,23 @@ from array import array
 from decrypt import decrypt, decryptPs2, decryptPb3
 from lzss import decode
 
-cpzFilename = ur"D:\eroge\明日の君と逢うために\data\pack\scriptback.cpz"
-newFilename = ur"D:\eroge\明日の君と逢うために\data\pack\script.header"
-outputFolder = ur"D:\eroge\明日の君と逢うために\data\pack\script\\"
+cpzFilename = ur"D:\eroge\hatsukoi\data\pack\scriptback.cpz"
+newFilename = ur"D:\eroge\hatsukoi\data\pack\script.header"
+outputFolder = ur"D:\eroge\hatsukoi\data\pack\script\\"
 
 #解密文件头
 with open(cpzFilename, 'rb') as cpz:
     header = array('B')
     header.fromfile(cpz, 0x18)
     
-    indexCount = unpack('L', header[4:8])[0] ^ 0x5E9C4F37
+    indexCount = unpack('L', header[4:8])[0] ^ 0xFE3A53D9
     header[4:8] = array('B' , pack('L', indexCount))
     
-    indexLength = unpack('L', header[0x8:0xC])[0] ^ 0xF32AED17
+    indexLength = unpack('L', header[0x8:0xC])[0] ^ 0x37F298E7
     header[0x8:0xC] = array('B' , pack('L', indexLength))
-                            
-    keyMask = unpack('L', header[0x10:0x14])[0] ^ 0xDDDDDDDD
+
+            
+    keyMask = unpack('L', header[0x10:0x14])[0] ^ 0x43DE7C19
     header[0x10:0x14] = array('B' , pack('L', keyMask))
     
 with open(cpzFilename, 'rb') as cpz:
