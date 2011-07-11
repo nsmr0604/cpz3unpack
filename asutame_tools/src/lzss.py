@@ -13,7 +13,13 @@
 #        CompuServe    74050,1022
 #**************************************************************/
 
+#llen = len
+
 from array import array
+try:
+    import c_lzss
+except:
+    c_lzss = False
 
 N = 2048
 F = 33
@@ -118,6 +124,13 @@ def deleteNode(p):
     dad[p] = NIL
 
 def encode(inputBuf, offset, length):
+#    print length
+    if c_lzss:
+        inputBufStr = inputBuf.tostring()
+#        print llen(c_lzss.encode(inputBufStr, offset, length))
+        return array('B', c_lzss.encode(inputBufStr, offset, length))
+    
+    
     global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     #codesize=0
     #textsize=0
@@ -216,6 +229,7 @@ def encode(inputBuf, offset, length):
         codesize += code_buf_ptr
     #print 'In: ' + str(textsize) + ' bytes\n'
     #print 'Out: ' + str(codesize) + ' bytes\n'
+#    print llen(outputBuf)
     return outputBuf
     
 def decode(inputBuf, offset, length):
@@ -268,7 +282,11 @@ def decode(inputBuf, offset, length):
     return outputBuf
 
 
-
+#import codecs
+#s=encode(array('B','ab\0cde'),1,4)
+#print decode(s,0,len(s)).tostring()
+#s=encode(array('B',codecs.encode(u'你好啊世界','gbk')),2,8)
+#print codecs.decode(decode(s,0,len(s)).tostring(),'gbk')
 
 
 
