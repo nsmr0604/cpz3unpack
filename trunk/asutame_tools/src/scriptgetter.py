@@ -20,6 +20,7 @@ class ScriptGetter(object):
             try:
                 translated_info = relation[source_filename]
                 translated_filename = os.path.join(translated_path, translated_info[0])
+                print 'Adding: ' + translated_filename
                 self.translated_file = codecs.open(translated_filename, 'r', translated_encoding)
                 self.translated_reader = ScriptReader(self.translated_file)
                 self.start_id = translated_info[1]

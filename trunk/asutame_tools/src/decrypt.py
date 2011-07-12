@@ -22,6 +22,12 @@ for byte in originalKeyTuple:
 del originalKeyTuple
 
 def decrypt(buf, offset, length, delta, keyMask):
+    if c_decrypt:
+        bufStr = buf[0:0+length+offset].tostring()
+        buf[0:0+length+offset] = array('B', c_decrypt.decrypt(bufStr, offset, length, delta, keyMask))
+#        buf[0:0+length+offset].tofile(open('d:/temp/c.lzss','wb'))
+#        raise self
+        return
     key = array('B')
     
     padding = length & 0x03
@@ -181,6 +187,12 @@ def rol8(num, count):
 
 
 def decryptPs2(buf, offset, length, key):
+    if c_decrypt:
+        bufStr = buf[offset:offset+length].tostring()
+#        print len(array('B', c_decrypt.encryptPs2(bufStr, key)))
+        buf[offset:offset+length] = array('B', c_decrypt.decryptPs2(bufStr, key))
+#        print  array('B', c_decrypt.encryptPs2(bufStr, key))[0]
+        return
     ecx = key
     eax = ecx
     eax >>= 0x14
