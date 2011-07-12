@@ -264,7 +264,7 @@ decode(PyObject *self, PyObject *args, PyObject *keywds)    /* Just the reverse 
             j = mygetc(&inputBuf);
             if(inputBuf > inputBufEnd)
             	break;
-            i |= ((j & 0xe0) << 4);  j = (j & 0x1f) + THRESHOLD;
+            i |= ((j & 0xe0) << 3);  j = (j & 0x1f) + THRESHOLD;
             for (k = 0; k <= j; k++) {
                 c = text_buf[(i + k) & (N - 1)];
                 myputc(c, &outputBuf);
@@ -274,8 +274,7 @@ decode(PyObject *self, PyObject *args, PyObject *keywds)    /* Just the reverse 
         }
     }
 
-    myputc(0, &outputBuf);
-    PyObject *result = Py_BuildValue("s#", outputBufStart, outputBuf - outputBufStart - 1);
+    PyObject *result = Py_BuildValue("s#", outputBufStart, outputBuf - outputBufStart);
     free(outputBufStart);
 
     return result;
