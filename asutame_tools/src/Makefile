@@ -6,15 +6,17 @@
 PYLIB = /usr/bin
 PYINC = /usr/include/python2.6
 
-CC = /usr/bin/gcc
+CC = gcc
+CFLAGS = -O3 -g -masm=intel -march=core2 -pipe 
+LDFLAGS = -s -shared -I$(PYINC) -L$(PYLIB) -lpython2.6 
 
 all: c_lzss.dll c_decrypt.dll
 
 c_lzss.dll: c_lzss.c
-		$(CC) -Os c_lzss.c -g -I$(PYINC) -shared -L$(PYLIB) -lpython2.6 -o c_lzss.dll
+		$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) c_lzss.c -o c_lzss.dll
 		
 c_decrypt.dll: c_decrypt.c
-		$(CC) -Os c_decrypt.c -masm=intel -g -I$(PYINC) -shared -L$(PYLIB) -lpython2.6 -o c_decrypt.dll
+		$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) c_decrypt.c -o c_decrypt.dll
 
 clean:
 		rm -f c_lzss.dll
