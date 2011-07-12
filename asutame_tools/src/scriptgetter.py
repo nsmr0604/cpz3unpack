@@ -29,9 +29,9 @@ class ScriptGetter(object):
                 pass
     
     def get_script(self, id):
-        id = int(id)
         if not self.translated_file:
             return
+        id = int(id)
         
         if id < self.start_id:
             return

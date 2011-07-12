@@ -28,12 +28,21 @@ class ScriptReader(object):
         while True:
             line = self.script_file.readline()
             if line == '':
-                return ''
+                return False
             
-            if line[0] == ';' or len(line.rstrip()) == 0 or line.find('=') == -1:
-                continue
+#            if line[0] == ';' or line.find('=') == -1 or len(line.rstrip()) == 0:
+#                continue
+            # is slow
+            
             id_content = line.split('=')
-            return (id_content[0], id_content[1].rstrip())
+            if len(id_content) < 2:
+                continue
+            b = id_content[1].rstrip()
+            
+            if b == '':
+                continue
+            
+            return (id_content[0], b)
         return None
 
     def read_line(self):
