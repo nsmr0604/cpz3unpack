@@ -85,8 +85,6 @@ def decrypt(buf, offset, length, delta, keyMask):
 def encrypt(buf, offset, length, delta, keyMask):
     if c_decrypt:
         bufStr = buf[0:0+length+offset].tostring()
-        import cProfile
-        cProfile.run('c_decrypt.encrypt(bufStr, offset, length, delta, keyMask)')
         buf[0:0+length+offset] = array('B', c_decrypt.encrypt(bufStr, offset, length, delta, keyMask))
 #        buf[0:0+length+offset].tofile(open('d:/temp/c.lzss','wb'))
 #        raise self

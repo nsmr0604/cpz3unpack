@@ -238,6 +238,15 @@ def encode(inputBuf, offset, length):
     return outputBuf
     
 def decode(inputBuf, offset, length):
+#    print length
+    if c_lzss:
+        inputBufStr = inputBuf.tostring()
+#        print llen(c_lzss.decode(inputBufStr, offset, length))
+#        array('B', c_lzss.decode(inputBufStr, offset, length)).tofile(open('d:/temp/c.lzss','wb'))
+#        raise self
+#        array('B', c_lzss.encode(inputBufStr, offset, length)).tofile(open('d:/temp/c.lzss','wb'))
+#        raise self
+        return array('B', c_lzss.decode(inputBufStr, offset, length))
     global N, F, THRESHOLD, NIL, maskl, mask2, text_buf, lson, rson, dad, textsize, codesize, printcount, match_length, match_position
     i = 0
     j = 0
@@ -284,6 +293,9 @@ def decode(inputBuf, offset, length):
                 text_buf[r] = c
                 r += 1
                 r &= N - 1
+#    print llen(outputBuf)
+#    outputBuf.tofile(open('d:/temp/a.lzss','wb'))
+#    raise self
     return outputBuf
 
 
