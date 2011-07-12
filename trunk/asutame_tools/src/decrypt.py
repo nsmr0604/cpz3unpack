@@ -3,7 +3,11 @@
 
 from struct import unpack, pack
 from array import array
-
+try:
+    import c_decrypt
+except:
+    c_decrypt = False
+    
 originalKey = array('B')
 originalKeyTuple = (0x5E , 0x4A , 0x0D , 0x4D , 0xE1 , 0xF3 , 0xAB , 0xB3 ,
                 0x6D , 0x33 , 0x37 , 0x3C , 0xF3 , 0xF5 , 0xC3 , 0x86,
@@ -79,6 +83,14 @@ def decrypt(buf, offset, length, delta, keyMask):
         buf[i - 1] = al
 
 def encrypt(buf, offset, length, delta, keyMask):
+    if c_decrypt:
+        bufStr = buf[0:0+length+offset].tostring()
+        import cProfile
+        cProfile.run('c_decrypt.encrypt(bufStr, offset, length, delta, keyMask)')
+        buf[0:0+length+offset] = array('B', c_decrypt.encrypt(bufStr, offset, length, delta, keyMask))
+#        buf[0:0+length+offset].tofile(open('d:/temp/c.lzss','wb'))
+#        raise self
+        return
     key = array('B')
     
     padding = length & 0x03
@@ -142,8 +154,12 @@ def encrypt(buf, offset, length, delta, keyMask):
         dl = dl & 0xff
         buf[i - 1] = al ^ dl
         
+#        print al ^ dl
+        
         padding = padding - 1
-
+    
+#    buf[0:0+length+offset].tofile(open('d:/temp/a.lzss','wb'))
+#    raise self
     
 def rol32(num, count):
     num1 = (num << count) & 0xFFFFFFFF
@@ -195,6 +211,13 @@ def decryptPs2(buf, offset, length, key):
     
     
 def encryptPs2(buf, offset, length, key):
+#    print length
+    if c_decrypt:
+        bufStr = buf[offset:offset+length].tostring()
+#        print len(array('B', c_decrypt.encryptPs2(bufStr, key)))
+        buf[offset:offset+length] = array('B', c_decrypt.encryptPs2(bufStr, key))
+#        print  array('B', c_decrypt.encryptPs2(bufStr, key))[0]
+        return
     ecx = key
     eax = ecx
     eax >>= 0x14
@@ -220,7 +243,6 @@ def encryptPs2(buf, offset, length, key):
         dl = dl + 0x7c
         dl = dl & 0xFF
         buf[i] = dl
-    
     
     
     

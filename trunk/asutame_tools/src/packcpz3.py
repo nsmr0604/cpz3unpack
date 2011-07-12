@@ -11,7 +11,7 @@ from scriptgetter import ScriptGetter
 cpzFilename = ur"D:\eroge\明日の君と逢うために\data\pack\scriptback.cpz"
 newFilename = ur"D:\eroge\明日の君と逢うために\data\pack\script.cpz"
 
-relation_filename = ur"D:\data\workspace\asutame_text\etc\relation.txt"
+relation_filename = ur"D:\data\workspace\asutame_text\etc\relation_release_0_5.txt"
 source_path = ur"D:\data\workspace\asutame_text\source" + u"\\"
 translated_path = ur"D:\data\workspace\asutame_text\已译" + u"\\"
 source_encoding = "shift-jis"

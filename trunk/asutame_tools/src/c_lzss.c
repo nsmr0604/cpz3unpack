@@ -106,13 +106,13 @@ void DeleteNode(int p)  /* deletes node p from tree */
     dad[p] = NIL;
 }
 
-int mygetc(unsigned char** input){
+unsigned int mygetc(unsigned char** input){
 	unsigned char r=**input;
 	(*input)++;
 	return r;
 }
 
-void myputc(int r, unsigned char** input){
+void myputc(unsigned int r, unsigned char** input){
 	**input = r;
 	(*input)++;
 }
@@ -146,12 +146,12 @@ encode(PyObject *self, PyObject *args, PyObject *keywds)
         (2 bytes).  Thus, eight units require at most 16 bytes of code. */
     code_buf_ptr = mask = 1;
     s = 0;  r = N - F;
-    for (i = s; i < r; i++) text_buf[i] = ' ';  /* Clear the buffer with
+    for (i = s; i < r; i++) text_buf[i] = '\0';  /* Clear the buffer with
         any character that will appear often. */
     for (len = 0; len < F && (c = mygetc(&inputBuf), inputBuf <= inputBufEnd); len++)
         text_buf[r + len] = c;  /* Read F bytes into the last F bytes of
             the buffer */
-    if ((textsize = len) == 0) return;  /* text of size zero */
+    if ((textsize = len) == 0) return NULL;  /* text of size zero */
     for (i = 1; i <= F; i++) InsertNode(r - i);  /* Insert the F strings,
         each of which begins with one or more 'space' characters.  Note
         the order in which these strings are inserted.  This way,
@@ -209,8 +209,8 @@ encode(PyObject *self, PyObject *args, PyObject *keywds)
     }
     
 
-    myputc(0, &outputBuf);
-    PyObject *result = Py_BuildValue("s#", outputBufStart, outputBuf - outputBufStart - 1);
+//    myputc(0, &outputBuf);
+    PyObject *result = Py_BuildValue("s#", outputBufStart, outputBuf - outputBufStart);
     free(outputBufStart);
 
     return result;
@@ -241,7 +241,7 @@ decode(PyObject *self, PyObject *args, PyObject *keywds)    /* Just the reverse 
     unsigned char *inputBufEnd = inputBuf + offset + length;
     inputBuf += offset;
     
-    for (i = 0; i < N - F; i++) text_buf[i] = ' ';
+    for (i = 0; i < N - F; i++) text_buf[i] = '\0';
     r = N - F;  flags = 0;
     for ( ; ; ) {
         if (((flags >>= 1) & 256) == 0) {
