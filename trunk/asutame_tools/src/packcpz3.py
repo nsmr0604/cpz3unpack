@@ -117,25 +117,37 @@ def main():
                         count += 1
                 count = 1
                 lastOffset = (0, 0)
-                for j in xrange(0, scriptOffset - 8):
-                    if unpack('L', itemContent[j:j + 4])[0] == 0x01200201:
-                        sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
-                        sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
-                        sentence = sentence.split('\0')[0]
-                        if sentence == '':
-                            if lastOffset[0] + lastOffset[1] - 1 + skipoffset>0:
-                                itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1 + skipoffset))
-                            #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
-                            continue
-                        if count < skipcount:
-                            count += 1
-                            continue
-                        if count == skipcount:
-                            skipoffset = sentenceOffset
+                j = 0
+                itemContentString = itemContent.tostring()
+                scriptEnd = scriptOffset - 8
+                while j < scriptEnd:
+                    findJ = itemContentString.find('\x01\x02\x20\x01', j + 1)
+                    if findJ >= 0:
+                        j = findJ
+                    else:
+                        break
+#                for j in xrange(0, scriptOffset - 8):
+#                    if itemContent[j]+(itemContent[j + 1]<<8)+(itemContent[j + 2]<<16)+(itemContent[j + 3]<<24) == 0x01200201: #unpack 太慢
+#                    if (itemContent[j] == 0x01) and (itemContent[j + 1] == 0x02) and (itemContent[j + 2] == 0x20) and (itemContent[j + 3] == 0x01): #上一行太慢
                         
-                        itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0] + skipoffset))
-                        lastOffset = textOffset[count]
+                    sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
+                    sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
+                    sentence = sentence.split('\0')[0]
+                    if sentence == '':
+                        if lastOffset[0] + lastOffset[1] - 1 + skipoffset>0:
+                            itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1 + skipoffset))
+                        #itemContent[j + 4:j + 8] = array('B', pack('L', 0))
+                        continue
+                    if count < skipcount:
                         count += 1
+                        continue
+                    if count == skipcount:
+                        skipoffset = sentenceOffset
+                    
+                    itemContent[j + 4:j + 8] = array('B', pack('L', textOffset[count][0] + skipoffset))
+                    lastOffset = textOffset[count]
+                    count += 1
+                        
                 
                 textArray = array('B', text)
                 itemHeader[0x1C:0x20] = array('B', pack('L', len(textArray)))

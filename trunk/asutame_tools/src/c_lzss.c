@@ -32,7 +32,9 @@ int        match_position, match_length,  /* of longest match.  These are
             set by the InsertNode() procedure. */
         lson[N + 1], rson[N + 257], dad[N + 1];  /* left & right children &
             parents -- These constitute binary search trees. */
-FILE    *infile, *outfile;  /* input & output files */
+//FILE    *infile, *outfile;  /* input & output files */
+
+//int empty_array[N + 1];
 
 void InitTree(void)  /* initialize trees */
 {
@@ -48,6 +50,10 @@ void InitTree(void)  /* initialize trees */
 
     for (i = N + 1; i <= N + 256; i++) rson[i] = NIL;
     for (i = 0; i < N; i++) dad[i] = NIL;
+//    printf("guale1\n");
+//    memcpy(rson + N + 1, empty_array, sizeof(int)*256);
+//    memcpy(dad, empty_array, sizeof(int)*N);
+//    printf("guale2\n");
 }
 
 void InsertNode(int r)
@@ -106,13 +112,13 @@ void DeleteNode(int p)  /* deletes node p from tree */
     dad[p] = NIL;
 }
 
-unsigned int mygetc(unsigned char** input){
+inline unsigned int mygetc(unsigned char** input){
 	unsigned char r=**input;
 	(*input)++;
 	return r;
 }
 
-void myputc(unsigned int r, unsigned char** input){
+inline void myputc(unsigned int r, unsigned char** input){
 	**input = r;
 	(*input)++;
 }
@@ -291,5 +297,7 @@ static struct PyMethodDef c_lzss_methods[] = {
 /* module initializer */
 PyMODINIT_FUNC initc_lzss( )                       /* called on first import */
 {                                      /* name matters if loaded dynamically */
+//	int i;
+//    for (i = 0; i < N + 1; i++) empty_array[i] = NIL;
     (void) Py_InitModule("c_lzss", c_lzss_methods);   /* mod name, table ptr */
 }
