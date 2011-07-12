@@ -12,11 +12,11 @@ def main():
     cpzFilename = ur"D:\eroge\明日の君と逢うために\data\pack\scriptback.cpz"
     newFilename = ur"D:\eroge\明日の君と逢うために\data\pack\script.cpz"
     
-    relation_filename = ur"D:\data\workspace\asutame_text\etc\relation_release_0_5.txt"
+    relation_filename = ur"D:\data\workspace\asutame_text\etc\relation.txt"
     source_path = ur"D:\data\workspace\asutame_text\source" + u"\\"
     translated_path = ur"D:\data\workspace\asutame_text\已译" + u"\\"
     source_encoding = "shift-jis"
-    translated_encoding = "gbk"
+    translated_encoding = "gb18030"
     
     #解密文件头
     with open(cpzFilename, 'rb') as cpz:
@@ -56,7 +56,6 @@ def main():
         itemLength = unpack('L', fullHeader[pos + 4:pos + 8])[0]
         itemOffset = unpack('L', fullHeader[pos + 8:pos + 0x0C])[0]
         itemFilename = fullHeader[pos + 0x18:pos + itemIndexLength].tostring().strip('\0')
-        
             
         itemKeyMask = unpack('L', fullHeader[pos + 0x14:pos + 0x18])[0]
         itemKeyMask = itemKeyMask ^ 0xC7F5DA63
@@ -66,7 +65,7 @@ def main():
             item.fromfile(cpz, itemLength)
             
             getter = ScriptGetter(itemFilename + '.txt', relation_filename, source_path, translated_path, source_encoding, translated_encoding)
-             
+            
             #只封包relation中定义的文本
             if hasattr(getter, 'start_id'):
                 skipcount = getter.start_id
@@ -163,7 +162,7 @@ def main():
             #将此内容加入
             newCpzContent.fromstring(item.tostring())
             
-            print itemFilename
+            print itemFilename + ' added'
             
         pos += itemIndexLength
         i += 1
