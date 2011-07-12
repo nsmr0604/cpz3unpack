@@ -13,7 +13,7 @@
 #        CompuServe    74050,1022
 #**************************************************************/
 
-#llen = len
+llen = len
 
 from array import array
 try:
@@ -128,6 +128,8 @@ def encode(inputBuf, offset, length):
     if c_lzss:
         inputBufStr = inputBuf.tostring()
 #        print llen(c_lzss.encode(inputBufStr, offset, length))
+#        array('B', c_lzss.encode(inputBufStr, offset, length)).tofile(open('d:/temp/c.lzss','wb'))
+#        raise self
         return array('B', c_lzss.encode(inputBufStr, offset, length))
     
     
@@ -230,6 +232,9 @@ def encode(inputBuf, offset, length):
     #print 'In: ' + str(textsize) + ' bytes\n'
     #print 'Out: ' + str(codesize) + ' bytes\n'
 #    print llen(outputBuf)
+#    print llen(outputBuf)
+#    outputBuf.tofile(open('d:/temp/a.lzss','wb'))
+#    raise self
     return outputBuf
     
 def decode(inputBuf, offset, length):
