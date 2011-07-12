@@ -14,16 +14,16 @@ unsigned char originalKey[] = {0x5E , 0x4A , 0x0D , 0x4D , 0xE1 , 0xF3 , 0xAB , 
                  0xF5 , 0x04 , 0xAF , 0xD9 , 0x7F , 0x68 , 0x3B , 0x5D ,
                  0xFD , 0xA6 , 0xC7 , 0xC1 , 0x89 , 0x22 , 0x50 , 0xFC};
 
-int mygetc(unsigned char** input){
-	unsigned char r=**input;
-	(*input)++;
-	return r;
-}
-
-void myputc(int r, unsigned char** input){
-	**input = r;
-	(*input)++;
-}
+//int mygetc(unsigned char** input){
+//	unsigned char r=**input;
+//	(*input)++;
+//	return r;
+//}
+//
+//void myputc(int r, unsigned char** input){
+//	**input = r;
+//	(*input)++;
+//}
 
 inline unsigned char rol8(unsigned char num,unsigned char count) {
     return (num << count) | (num >> (0x08 - count));

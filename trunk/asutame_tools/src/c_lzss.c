@@ -36,6 +36,8 @@ int        match_position, match_length,  /* of longest match.  These are
 
 //int empty_array[N + 1];
 
+
+
 void InitTree(void)  /* initialize trees */
 {
     int  i;
@@ -53,6 +55,8 @@ void InitTree(void)  /* initialize trees */
 //    printf("guale1\n");
 //    memcpy(rson + N + 1, empty_array, sizeof(int)*256);
 //    memcpy(dad, empty_array, sizeof(int)*N);
+//    memset32(rson + N + 1, NIL, sizeof(int)*256);
+//    memset32(dad, NIL, sizeof(int)*N);
 //    printf("guale2\n");
 }
 
@@ -64,8 +68,8 @@ void InsertNode(int r)
        one, because the old one will be deleted sooner.
        Note r plays double role, as tree node and position in buffer. */
 {
-    int  i, p, cmp;
-    unsigned char  *key;
+	int  i, p, cmp;
+	unsigned char  *key;
 
     cmp = 1;  key = &text_buf[r];  p = N + 1 + key[0];
     rson[r] = lson[r] = NIL;  match_length = 0;
@@ -154,7 +158,7 @@ encode(PyObject *self, PyObject *args, PyObject *keywds)
     s = 0;  r = N - F;
     for (i = s; i < r; i++) text_buf[i] = '\0';  /* Clear the buffer with
         any character that will appear often. */
-    for (len = 0; len < F && (c = mygetc(&inputBuf), inputBuf <= inputBufEnd); len++)
+    for (len = 0; len < F && (c = *(inputBuf++), inputBuf <= inputBufEnd); len++)
         text_buf[r + len] = c;  /* Read F bytes into the last F bytes of
             the buffer */
     if ((textsize = len) == 0) return NULL;  /* text of size zero */
@@ -186,7 +190,7 @@ encode(PyObject *self, PyObject *args, PyObject *keywds)
         }
         last_match_length = match_length;
         for (i = 0; i < last_match_length &&
-        	(c = mygetc(&inputBuf), inputBuf <= inputBufEnd); i++) {
+        	(c = *(inputBuf++), inputBuf <= inputBufEnd); i++) {
             DeleteNode(s);        /* Delete old strings and */
             text_buf[s] = c;    /* read new bytes */
             if (s < F - 1) text_buf[s + N] = c;  /* If the position is
@@ -251,23 +255,23 @@ decode(PyObject *self, PyObject *args, PyObject *keywds)    /* Just the reverse 
     r = N - F;  flags = 0;
     for ( ; ; ) {
         if (((flags >>= 1) & 256) == 0) {
-            c = mygetc(&inputBuf);
+            c = *(inputBuf++);
             if(inputBuf > inputBufEnd)
             	break;
             flags = c | 0xff00;        /* uses higher byte cleverly */
         }                            /* to count eight */
         if (flags & 1) {
-            c = mygetc(&inputBuf);
+            c = *(inputBuf++);
             if(inputBuf > inputBufEnd)
             	break;
             myputc(c, &outputBuf);
             text_buf[r++] = c;
             r &= (N - 1);
         } else {
-            i = mygetc(&inputBuf);
+            i = *(inputBuf++);
             if(inputBuf > inputBufEnd)
             	break;
-            j = mygetc(&inputBuf);
+            j = *(inputBuf++);
             if(inputBuf > inputBufEnd)
             	break;
             i |= ((j & 0xe0) << 3);  j = (j & 0x1f) + THRESHOLD;
@@ -297,7 +301,7 @@ static struct PyMethodDef c_lzss_methods[] = {
 /* module initializer */
 PyMODINIT_FUNC initc_lzss( )                       /* called on first import */
 {                                      /* name matters if loaded dynamically */
-//	int i;
+	int i;
 //    for (i = 0; i < N + 1; i++) empty_array[i] = NIL;
     (void) Py_InitModule("c_lzss", c_lzss_methods);   /* mod name, table ptr */
 }

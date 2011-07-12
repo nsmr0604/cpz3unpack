@@ -131,8 +131,10 @@ def main():
 #                    if (itemContent[j] == 0x01) and (itemContent[j + 1] == 0x02) and (itemContent[j + 2] == 0x20) and (itemContent[j + 3] == 0x01): #上一行太慢
                         
                     sentenceOffset = unpack('L', itemContent[j + 4:j + 8])[0]
-                    sentence = itemContent[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].tostring()
-                    sentence = sentence.split('\0')[0]
+#                    sentence = itemContentString[scriptOffset + sentenceOffset:scriptOffset + sentenceOffset + 255].split('\0')[0]  #slow
+                    sentenceEnd = itemContentString.find('\0', scriptOffset + sentenceOffset)
+                    sentence = itemContentString[scriptOffset + sentenceOffset:sentenceEnd]
+                    
                     if sentence == '':
                         if lastOffset[0] + lastOffset[1] - 1 + skipoffset>0:
                             itemContent[j + 4:j + 8] = array('B', pack('L', lastOffset[0] + lastOffset[1] - 1 + skipoffset))
@@ -200,5 +202,11 @@ def main():
         newCpzContent.tofile(newCpz) 
 
 
-import cProfile
-cProfile.run('main()')
+#import cProfile
+#cProfile.run('main()', 'profile_result')
+#import pstats
+#p = pstats.Stats('profile_result')
+#p.sort_stats('time')
+#p.print_stats()
+
+main()
