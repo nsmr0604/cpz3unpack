@@ -84,6 +84,6 @@ class ScriptReader(object):
                 if r[0] == str(id):
                     return r[1]
             else:
-                return None
+                raise Exception('can\'t find id ' + str(id) + ' in file ' + str(self.script_file))
         
         
